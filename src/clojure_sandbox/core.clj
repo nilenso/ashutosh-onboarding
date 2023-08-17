@@ -1,7 +1,4 @@
-(ns clojure-sandbox.core
-  (:gen-class))
+(ns clojure-sandbox.core)
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
+(defn -main []
   (println "Hello, World!"))
