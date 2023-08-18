@@ -114,14 +114,57 @@
 
 ;; 30. Write a function which removes consecutive duplicates from a sequence.
 (defn remove-consecutive-duplicates [s]
-  (loop [result []
-         [current & remaining] s]
-    (cond
-      (nil? current) result
-      (= current (last result)) (recur result remaining)
-      :else (recur (conj result current) remaining))))
+  (reduce
+   (fn [acc next]
+     (if (= next (last acc))
+       acc
+       (conj acc next)))
+   [] s))
+
+;; an older, more verbose approach
+;; (defn remove-consecutive-duplicates [s]
+  ;; (loop [result []
+  ;;        [current & remaining] s]
+  ;;   (cond
+  ;;     (nil? current) result
+  ;;     (= current (last result)) (recur result remaining)
+  ;;     :else (recur (conj result current) remaining))))
 
 
 (apply str (remove-consecutive-duplicates "Leeeeeerrroyyy"))
 (remove-consecutive-duplicates [1 1 2 3 3 2 2 3])
 (remove-consecutive-duplicates [[1 2] [1 2] [3 4] [1 2]])
+
+
+;; 31. Write a function which packs consecutive duplicates into sub-lists.
+
+(defn pack-sequence [[current & remaining]]
+  (loop [result []
+         curr-subsequence [current]
+         [current & remaining] remaining]
+    (cond
+      (nil? current) (conj result curr-subsequence)
+      (= current (first curr-subsequence)) (recur result (conj curr-subsequence current) remaining)
+      :else (recur (conj result curr-subsequence) [current] remaining))))
+
+;; not working, but why?
+;; (defn pack-sequence [s]
+;;   (reduce
+;;    (fn [acc next]
+;;      (if (= next (first (last acc)))
+;;        (conj (butlast acc) (conj (last acc) next))
+;;        (conj acc [next])))
+;;    [] s))
+
+(pack-sequence [1 1 2 1 1 1 3 3])
+(pack-sequence [:a :a :b :b :c])
+(pack-sequence [[1 2] [1 2] [3 4]])
+
+;; 32. Write a function which duplicates each element of a sequence.
+(defn duplicate-elements [s]
+  (reduce #(conj %1 %2 %2) [] s))
+
+(duplicate-elements [1 2 3])
+(duplicate-elements [:a :a :b :b])
+(duplicate-elements [[1 2] [3 4]])
+(duplicate-elements [44 33])
