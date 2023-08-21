@@ -2,23 +2,22 @@
   (:require [clojure.string]))
 
 ;; 21. Write a function which returns the Nth element from a sequence.
-(defn nth-element [[one & others :as sequence] position]
-  (if (seq sequence)
+(defn nth-element [[current & remaining :as items] position]
+  (when items
     (if (pos? position)
-      (recur others (dec position))
-      one)
-    nil))
+      (recur remaining (dec position))
+      current)))
 
 (nth-element [] 1)
-(nth-element [0 1 2 3 4] 2)
+(nth-element [nil 1 2 3 4] 2)
 (nth-element [0 1 2 3] 5)
 
 ;; 22. Write a function which returns the total number of elements in a sequence.
 (defn count-total [init-sequence]
-  (loop [c 0, s init-sequence]
-    (if (seq s)
-      (recur (inc c) (rest s))
-      c)))
+  (loop [count 0, remaining init-sequence]
+    (if (seq remaining)
+      (recur (inc count) (rest remaining))
+      count)))
 
 (count-total [])
 (count-total [1 2 3])
@@ -26,46 +25,48 @@
 
 
 ;; 23. Write a function which reverses a sequence.
-(defn reverse-sequence [sequence]
-  (loop [s sequence, r []]
-    (if (seq s)
-      (recur (rest s) (cons (first s) r))
-      r)))
+(defn reverse-sequence [init-sequence]
+  (loop [remaining init-sequence, reversed []]
+    (if (seq remaining)
+      (recur (rest remaining) (cons (first remaining) reversed))
+      reversed)))
 
 (reverse-sequence [1 2 3 4])
 (reverse-sequence [])
 
 ;; 24. Write a function which returns the sum of a sequence of numbers.
 (defn sum [nums]
-  (apply + nums))
+  (reduce + nums))
 
 (sum [1 2 3])
 (sum [])
 
 ;; 25. Write a function which returns only the odd numbers from a sequence.
 (defn filter-odd [nums]
-  (loop [result [], [one & others :as n] nums]
-    (if (seq n)
+  (loop [odds [], [current & remaining :as nums] nums]
+    (if (seq nums)
       (recur
-       (if (== 0 (mod one 2))
-         result
-         (conj result one))
-       others)
-      result)))
+       (if (== 0 (mod current 2))
+         odds
+         (conj odds current))
+       remaining)
+      odds)))
 
 (filter-odd [1 2 3 4 5 6])
 (filter-odd [1 2 3 4 5 6 7])
 (filter-odd [])
 
 ;; 26. Write a function which returns the first X fibonacci numbers.
-(defn fibonacci-sequence [n]
+(defn fibonacci-sequence [count]
   (cond
-    (== n 0) []
-    (== n 1) [1]
-    :else (loop [x (- n 2) , result [1 1]]
+    (== count 0) []
+    (== count 1) [1]
+    :else (loop [x (- count 2) , fib-nums [1 1]]
             (if (pos? x)
-              (recur (dec x) (conj result (apply + (take-last 2 result))))
-              result))))
+              (recur (dec x) (conj
+                              fib-nums
+                              (reduce + (take-last 2 fib-nums))))
+              fib-nums))))
 
 (fibonacci-sequence 0)
 (fibonacci-sequence 1)
@@ -78,8 +79,8 @@
     true
     (let [left (first s)
           right (last s)
-          others (butlast (rest s))]
-      (and (= left right) (recur others)))))
+          remaining (butlast (rest s))]
+      (and (= left right) (recur remaining)))))
 
 (is-palindrome "abc")
 (is-palindrome "aba")
@@ -87,12 +88,11 @@
 (is-palindrome [1 1 2 2 1 1])
 
 ;; 28. Write a function which flattens a sequence.
-(defn flatten-list [[h & t :as s]]
-  (if (seq s)
-    (if (coll? h)
-      (concat (flatten-list h) (flatten-list t))
-      (cons h (flatten-list t)))
-    '()))
+(defn flatten-list [[current & remaining :as items]]
+  (when (seq items)
+    (if (coll? current)
+      (concat (flatten-list current) (flatten-list remaining))
+      (cons current (flatten-list remaining)))))
 
 (flatten-list '((1 2) 3 [4 [5 6]]))
 (flatten-list ["a" ["b"] "c"])
@@ -100,11 +100,11 @@
 
 ;; 29. Write a function which takes a string and returns a new string containing
 ;; only the capital letters.
-(defn filter-capital-letters [[head & others :as s]]
+(defn filter-capital-letters [[current & remaining :as s]]
   (if (seq s)
-    (if (Character/isUpperCase head)
-      (clojure.string/join [head (filter-capital-letters others)])
-      (filter-capital-letters others))
+    (if (Character/isUpperCase current)
+      (clojure.string/join [current (filter-capital-letters remaining)])
+      (filter-capital-letters remaining))
     ""))
 
 (filter-capital-letters "HeLlO, WoRlD!")
@@ -113,22 +113,23 @@
 
 
 ;; 30. Write a function which removes consecutive duplicates from a sequence.
-(defn remove-consecutive-duplicates [s]
+(defn remove-consecutive-duplicates [items]
   (reduce
-   (fn [acc next]
-     (if (= next (last acc))
-       acc
-       (conj acc next)))
-   [] s))
+   (fn [result current]
+     (if (= current (last result))
+       result
+       (conj result current)))
+   []
+   items))
 
-;; an older, more verbose approach
-;; (defn remove-consecutive-duplicates [s]
-  ;; (loop [result []
-  ;;        [current & remaining] s]
-  ;;   (cond
-  ;;     (nil? current) result
-  ;;     (= current (last result)) (recur result remaining)
-  ;;     :else (recur (conj result current) remaining))))
+;; a more verbose approach
+;; (defn remove-consecutive-duplicates [items]
+;;   (loop [result []
+;;          [current & remaining] items]
+;;     (cond
+;;       (nil? current) result
+;;       (= current (last result)) (recur result remaining)
+;;       :else (recur (conj result current) remaining))))
 
 
 (apply str (remove-consecutive-duplicates "Leeeeeerrroyyy"))
@@ -140,34 +141,40 @@
 
 ;; another approach using recursion.
 ;; (defn pack-sequence [[current & remaining]]
-;;   (loop [result []
-;;          curr-subsequence [current]
+;;   (loop [packed-seq []
+;;          curr-subseq [current]
 ;;          [current & remaining] remaining]
 ;;     (cond
-;;       (nil? current) (conj result curr-subsequence)
-;;       (= current (first curr-subsequence)) (recur result (conj curr-subsequence current) remaining)
-;;       :else (recur (conj result curr-subsequence) [current] remaining))))
+;;       (nil? current) (conj packed-seq curr-subseq)
+;;       (= current (first curr-subseq)) (recur
+;;                                        packed-seq
+;;                                        (conj curr-subseq current)
+;;                                        remaining)
+;;       :else (recur
+;;              (conj packed-seq curr-subseq)
+;;              [current]
+;;              remaining))))
 
-(defn pack-sequence [s]
+(defn pack-sequence [items]
   (reduce
-   (fn [packed-seq n]
+   (fn [packed-seq current]
      (let [last-sublist (last packed-seq)]
-       (if (= n (first last-sublist))
+       (if (= current (first last-sublist))
          (conj (subvec packed-seq
                        0
                        (dec (count packed-seq)))
-               (conj last-sublist n))
-         (conj packed-seq [n]))))
+               (conj last-sublist current))
+         (conj packed-seq [current]))))
    []
-   s))
+   items))
 
 (pack-sequence [1 1 2 1 1 1 3 3])
 (pack-sequence [:a :a :b :b :c])
 (pack-sequence [[1 2] [1 2] [3 4]])
 
 ;; 32. Write a function which duplicates each element of a sequence.
-(defn duplicate-elements [s]
-  (reduce #(conj %1 %2 %2) [] s))
+(defn duplicate-elements [items]
+  (reduce #(conj %1 %2 %2) [] items))
 
 (duplicate-elements [1 2 3])
 (duplicate-elements [:a :a :b :b])
