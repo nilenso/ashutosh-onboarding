@@ -1,5 +1,5 @@
 (ns clojure-sandbox.4clojure
-  (:require [clojure.string]))
+  (:require [clojure.string :as str]))
 
 ;; 21. Write a function which returns the Nth element from a sequence.
 (defn nth-element [[current & remaining :as items] position]
@@ -103,7 +103,7 @@
 (defn filter-capital-letters [[current & remaining :as s]]
   (if (seq s)
     (if (Character/isUpperCase current)
-      (clojure.string/join [current (filter-capital-letters remaining)])
+      (str/join [current (filter-capital-letters remaining)])
       (filter-capital-letters remaining))
     ""))
 
