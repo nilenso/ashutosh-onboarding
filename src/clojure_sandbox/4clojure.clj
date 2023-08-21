@@ -138,16 +138,16 @@
 
 ;; 31. Write a function which packs consecutive duplicates into sub-lists.
 
-(defn pack-sequence [[current & remaining]]
-  (loop [result []
-         curr-subsequence [current]
-         [current & remaining] remaining]
-    (cond
-      (nil? current) (conj result curr-subsequence)
-      (= current (first curr-subsequence)) (recur result (conj curr-subsequence current) remaining)
-      :else (recur (conj result curr-subsequence) [current] remaining))))
+;; another approach using recursion.
+;; (defn pack-sequence [[current & remaining]]
+;;   (loop [result []
+;;          curr-subsequence [current]
+;;          [current & remaining] remaining]
+;;     (cond
+;;       (nil? current) (conj result curr-subsequence)
+;;       (= current (first curr-subsequence)) (recur result (conj curr-subsequence current) remaining)
+;;       :else (recur (conj result curr-subsequence) [current] remaining))))
 
-;; not working, but why?
 (defn pack-sequence [s]
   (reduce
    (fn [packed-seq n]
@@ -161,7 +161,6 @@
    []
    s))
 
-;; []
 (pack-sequence [1 1 2 1 1 1 3 3])
 (pack-sequence [:a :a :b :b :c])
 (pack-sequence [[1 2] [1 2] [3 4]])
