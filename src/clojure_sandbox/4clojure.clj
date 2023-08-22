@@ -298,3 +298,40 @@
 
 ;; 45. The iterate function can be used to produce an infinite lazy sequence.
 (take 5 (iterate #(+ 3 %) 1))
+
+;; 46. Write a higher-order function which flips the order of the arguments of
+;;     an input function.
+(defn flip-args [f]
+  (fn [& args] (apply f (reverse args))))
+
+((flip-args nth) 2 [1 2 3 4 5])
+
+;; 47-48 on 4Clojure.
+
+;; 49. Write a function which will split a sequence into two parts.
+(defn split-sequence [at-pos items]
+  [(vec (take at-pos items)) (vec (drop at-pos items))])
+
+(split-sequence 3 [1 2 3 4 5 6])
+(split-sequence 1 [:a :b :c :d])
+(split-sequence 2 [[1 2] [3 4] [5 6]])
+
+;; 50. Write a function which takes a sequence consisting of items with
+;;     different types and splits them up into a set of homogeneous
+;;     sub-sequences. The internal order of each sub-sequence should be
+;;     maintained, but the sub-sequences themselves can be returned in any order
+;;     (this is why 'set' is used in the test cases).
+(defn classify [items]
+  (loop [[current & remaining :as items] items, classified {}]
+    (if items
+      (recur
+       remaining
+       (let [t (type current)]
+         (if (contains? classified t)
+           (update classified t conj current)
+           (assoc classified t [current]))))
+      (set (vals classified)))))
+
+(classify [1 :a 2 :b 3 :c])
+(classify [:a "foo"  "bar" :b])
+(classify [[1 2] :a [3 4] 5 6 :b])
