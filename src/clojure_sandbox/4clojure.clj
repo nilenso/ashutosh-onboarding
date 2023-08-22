@@ -180,3 +180,36 @@
 (duplicate-elements [:a :a :b :b])
 (duplicate-elements [[1 2] [3 4]])
 (duplicate-elements [44 33])
+
+;; 33. Write a function which replicates each element of a sequence a variable
+;; number of times.
+(defn replicate-n-times [items times]
+  (reduce #(concat %1 (take times (repeat %2))) '() items))
+
+(replicate-n-times [1 2 3] 2)
+(replicate-n-times [:a :b] 4)
+(replicate-n-times [4 5 6] 1)
+(replicate-n-times [[1 2] [3 4]] 2)
+(replicate-n-times [44 33] 2)
+
+;; 34. Write a function which creates a list of all integers in a given range.
+(defn range* [start end]
+  (loop [current start, items []]
+    (if (< current end)
+      (recur (inc current) (conj items current))
+      (seq items))))
+
+(range* 1 4)
+(range* -2 2)
+(range* 5 8)
+
+;; 35-37 on 4Clojure.
+
+;; 38. Write a function which takes a variable number of parameters and returns
+;; the maximum value.
+(defn max* [& items]
+  (reduce #(if (< %1 %2) %2 %1) items))
+
+(max* 1 8 3 4)
+(max* 30 20)
+(max* 45 67 11)
