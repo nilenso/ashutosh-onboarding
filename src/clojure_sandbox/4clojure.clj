@@ -344,3 +344,58 @@
 (comment (classify [1 :a 2 :b 3 :c]))
 (comment (classify [:a "foo"  "bar" :b]))
 (comment (classify [[1 2] :a [3 4] 5 6 :b]))
+
+;; 51-52 on 4Clojure.
+
+;; 53. Given a vector of integers, find the longest consecutive sub-sequence of
+;;     increasing numbers. If two sub-sequences have the same length, use the
+;;     one that occurs first. An increasing sub-sequence must have a length of 2
+;;     or greater to qualify.
+(defn longest-increasing-subseqeuence [[current & remaining :as nums]]
+  (if (> 2 (count nums))
+    []
+    (loop [current-longest [current]
+           longest [current]
+           [current & remaining] remaining]
+      (if (nil? current)
+        (if (< 1 (count longest)) longest [])
+        (let [new-current-longest (if (< (peek current-longest) current)
+                                    (conj current-longest current)
+                                    [current])
+              new-longest (if (< (count longest) (count new-current-longest))
+                            new-current-longest
+                            longest)]
+          (recur new-current-longest new-longest remaining))))))
+
+(comment (longest-increasing-subseqeuence [1 0 1 2 3 0 4 5]))
+(comment (longest-increasing-subseqeuence [5 6 1 3 2 7]))
+(comment (longest-increasing-subseqeuence [2 3 3 4 5]))
+(comment (longest-increasing-subseqeuence [7 6 5 4]))
+
+;; 54. Write a function which returns a sequence of lists of x items each. Lists
+;;     of less than x items should not be returned.
+(defn partition* [n items]
+  (loop [partitioned []
+         remaining items]
+    (if (> n (count remaining))
+      (seq partitioned)
+      (recur (conj partitioned (take n remaining)) (drop n remaining)))))
+
+(comment (partition* 3 (range 9)))
+(comment (partition* 2 (range 8)))
+(comment (partition* 3 (range 8)))
+
+;; 55. Write a function which returns a map containing the number of occurences
+;;     of each distinct item in a sequence.
+(defn count-freq [items]
+  (reduce
+   (fn [freqs current]
+     (if (contains? freqs current)
+       (update freqs current inc)
+       (assoc freqs current 1)))
+   {}
+   items))
+
+(comment (count-freq [1 1 2 3 2 1 1]))
+(comment (count-freq [:b :a :b :a :b]))
+(comment (count-freq '([1 2] [1 3] [1 3])))
