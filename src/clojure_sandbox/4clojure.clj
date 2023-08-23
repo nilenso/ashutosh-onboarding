@@ -399,3 +399,64 @@
 (comment (count-freq [1 1 2 3 2 1 1]))
 (comment (count-freq [:b :a :b :a :b]))
 (comment (count-freq '([1 2] [1 3] [1 3])))
+
+;; 56. Write a function which removes the duplicates from a sequence. Order of
+;;     the items must be maintained.
+(defn distinct* [items]
+  (loop [item-set #{}
+         result []
+         [current & remaining] items]
+    (cond
+      (nil? current) result
+      (contains? item-set current) (recur item-set result remaining)
+      :else (recur (conj item-set current) (conj result current) remaining))))
+
+(comment (distinct* [1 2 1 3 1 2 4]))
+(comment (distinct* [:a :a :b :b :c :c]))
+(comment (distinct* '([2 4] [1 2] [1 3] [1 3])))
+(comment (distinct* (range 50)))
+
+;; 57 on 4Clojure.
+
+;; 58. Write a function which allows you to create function compositions. The
+;;     parameter list should take a variable number of functions, and create a
+;;     function applies them from right-to-left.
+(defn comp* [& fns]
+  (fn [& args]
+    (loop [[current & remaining] (reverse fns)
+           result args]
+      (if (nil? current)
+        (first result)
+        (recur remaining (list (apply current result)))))))
+
+(comment ((comp* rest reverse) [1 2 3 4]))
+(comment ((comp* (partial + 3) second) [1 2 3 4]))
+
+;; 59. Take a set of functions and return a new function that takes a variable
+;;     number of arguments and returns a sequence containing the result of
+;;     applying each function left-to-right to the argument list.
+(defn juxt* [& fns]
+  (fn [& args]
+    (loop [[current & remaining] fns
+           result []]
+      (if (nil? current)
+        result
+        (recur remaining (conj result (apply current args)))))))
+
+(comment ((juxt* + max min) 2 3 5 1 6 4))
+(comment ((juxt* #(.toUpperCase %) count) "hello"))
+(comment ((juxt* :a :c :b) {:a 2 :b 4 :c 6 :d 8 :e 10}))
+
+;; 60. Write a function which behaves like reduce, but returns each intermediate
+;;     value of the reduction. Your function must accept either two or three
+;;     arguments, and the return sequence must be lazy.
+(defn reductions*
+  ([f coll] (reductions* f (first coll) (rest coll)))
+  ([f val coll] (lazy-seq
+                 (if (empty? coll)
+                   [val]
+                   (cons val (reductions* f (f val (first coll)) (rest coll)))))))
+
+(comment (take 5 (reductions* + (range))))
+(comment (reductions* conj [1] [2 3 4]))
+(comment (reductions* * 2 [3 4 5]))
