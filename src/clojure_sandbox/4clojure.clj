@@ -8,9 +8,9 @@
       (recur remaining (dec position))
       current)))
 
-(nth-element [] 1)
-(nth-element [nil 1 2 3 4] 2)
-(nth-element [0 1 2 3] 5)
+(comment (nth-element [] 1))
+(comment (nth-element [nil 1 2 3 4] 2))
+(comment (nth-element [0 1 2 3] 5))
 
 ;; 22. Write a function which returns the total number of elements in a sequence.
 (defn count-total [s]
@@ -19,9 +19,9 @@
       (recur (inc count) (rest remaining))
       count)))
 
-(count-total [])
-(count-total [1 2 3])
-(count-total [1 2 3 4 5])
+(comment (count-total []))
+(comment (count-total [1 2 3]))
+(comment (count-total [1 2 3 4 5]))
 
 
 ;; 23. Write a function which reverses a sequence.
@@ -32,15 +32,15 @@
       (recur (rest remaining) (cons (first remaining) reversed))
       reversed)))
 
-(reverse-sequence [1 2 3 4])
-(reverse-sequence [])
+(comment (reverse-sequence [1 2 3 4]))
+(comment (reverse-sequence []))
 
 ;; 24. Write a function which returns the sum of a sequence of numbers.
 (defn sum [nums]
   (reduce + nums))
 
-(sum [1 2 3])
-(sum [])
+(comment (sum [1 2 3]))
+(comment (sum []))
 
 ;; 25. Write a function which returns only the odd numbers from a sequence.
 (defn filter-odd [nums]
@@ -54,9 +54,9 @@
        remaining)
       odds)))
 
-(filter-odd [1 2 3 4 5 6])
-(filter-odd [1 2 3 4 5 6 7])
-(filter-odd [])
+(comment (filter-odd [1 2 3 4 5 6]))
+(comment (filter-odd [1 2 3 4 5 6 7]))
+(comment (filter-odd []))
 
 ;; 26. Write a function which returns the first X fibonacci numbers.
 (defn fibonacci-sequence [count]
@@ -71,10 +71,10 @@
                               (reduce + (take-last 2 fib-nums))))
               fib-nums))))
 
-(fibonacci-sequence 0)
-(fibonacci-sequence 1)
-(fibonacci-sequence 2)
-(fibonacci-sequence 7)
+(comment (fibonacci-sequence 0))
+(comment (fibonacci-sequence 1))
+(comment (fibonacci-sequence 2))
+(comment (fibonacci-sequence 7))
 
 ;; 27. Write a function which returns true if the given sequence is a palindrome.
 (defn is-palindrome [s]
@@ -85,10 +85,10 @@
           remaining (butlast (rest s))]
       (and (= left right) (recur remaining)))))
 
-(is-palindrome "abc")
-(is-palindrome "aba")
-(is-palindrome [1 1 1 2])
-(is-palindrome [1 1 2 2 1 1])
+(comment (is-palindrome "abc"))
+(comment (is-palindrome "aba"))
+(comment (is-palindrome [1 1 1 2]))
+(comment (is-palindrome [1 1 2 2 1 1]))
 
 ;; 28. Write a function which flattens a sequence.
 (defn flatten-list [[current & remaining :as items]]
@@ -97,9 +97,9 @@
       (concat (flatten-list current) (flatten-list remaining))
       (cons current (flatten-list remaining)))))
 
-(flatten-list '((1 2) 3 [4 [5 6]]))
-(flatten-list ["a" ["b"] "c"])
-(flatten-list '((((:a)))))
+(comment (flatten-list '((1 2) 3 [4 [5 6]])))
+(comment (flatten-list ["a" ["b"] "c"]))
+(comment (flatten-list '((((:a))))))
 
 ;; 29. Write a function which takes a string and returns a new string containing
 ;; only the capital letters.
@@ -110,9 +110,9 @@
       (filter-capital-letters remaining))
     ""))
 
-(filter-capital-letters "HeLlO, WoRlD!")
-(filter-capital-letters "nothing")
-(filter-capital-letters "$#A(*&987Zf")
+(comment (filter-capital-letters "HeLlO, WoRlD!"))
+(comment (filter-capital-letters "nothing"))
+(comment (filter-capital-letters "$#A(*&987Zf"))
 
 
 ;; 30. Write a function which removes consecutive duplicates from a sequence.
@@ -135,9 +135,9 @@
 ;;       :else (recur (conj result current) remaining))))
 
 
-(apply str (remove-consecutive-duplicates "Leeeeeerrroyyy"))
-(remove-consecutive-duplicates [1 1 2 3 3 2 2 3])
-(remove-consecutive-duplicates [[1 2] [1 2] [3 4] [1 2]])
+(comment (apply str (remove-consecutive-duplicates "Leeeeeerrroyyy")))
+(comment (remove-consecutive-duplicates [1 1 2 3 3 2 2 3]))
+(comment (remove-consecutive-duplicates [[1 2] [1 2] [3 4] [1 2]]))
 
 
 ;; 31. Write a function which packs consecutive duplicates into sub-lists.
@@ -171,29 +171,29 @@
    []
    items))
 
-(pack-sequence [1 1 2 1 1 1 3 3])
-(pack-sequence [:a :a :b :b :c])
-(pack-sequence [[1 2] [1 2] [3 4]])
+(comment (pack-sequence [1 1 2 1 1 1 3 3]))
+(comment (pack-sequence [:a :a :b :b :c]))
+(comment (pack-sequence [[1 2] [1 2] [3 4]]))
 
 ;; 32. Write a function which duplicates each element of a sequence.
 (defn duplicate-elements [items]
   (reduce #(conj %1 %2 %2) [] items))
 
-(duplicate-elements [1 2 3])
-(duplicate-elements [:a :a :b :b])
-(duplicate-elements [[1 2] [3 4]])
-(duplicate-elements [44 33])
+(comment (duplicate-elements [1 2 3]))
+(comment (duplicate-elements [:a :a :b :b]))
+(comment (duplicate-elements [[1 2] [3 4]]))
+(comment (duplicate-elements [44 33]))
 
 ;; 33. Write a function which replicates each element of a sequence a variable
 ;; number of times.
 (defn replicate-n-times [items times]
   (reduce #(concat %1 (repeat times %2)) '() items))
 
-(replicate-n-times [1 2 3] 2)
-(replicate-n-times [:a :b] 4)
-(replicate-n-times [4 5 6] 1)
-(replicate-n-times [[1 2] [3 4]] 2)
-(replicate-n-times [44 33] 2)
+(comment (replicate-n-times [1 2 3] 2))
+(comment (replicate-n-times [:a :b] 4))
+(comment (replicate-n-times [4 5 6] 1))
+(comment (replicate-n-times [[1 2] [3 4]] 2))
+(comment (replicate-n-times [44 33] 2))
 
 ;; 34. Write a function which creates a list of all integers in a given range.
 (defn range* [start end]
@@ -203,9 +203,9 @@
       (recur (inc current) (conj items current))
       (seq items))))
 
-(range* 1 4)
-(range* -2 2)
-(range* 5 8)
+(comment (range* 1 4))
+(comment (range* -2 2))
+(comment (range* 5 8))
 
 ;; 35-37 on 4Clojure.
 
@@ -214,9 +214,9 @@
 (defn max* [& items]
   (reduce #(if (< %1 %2) %2 %1) items))
 
-(max* 1 8 3 4)
-(max* 30 20)
-(max* 45 67 11)
+(comment (max* 1 8 3 4))
+(comment (max* 30 20))
+(comment (max* 45 67 11))
 
 ;; 39. Write a function which takes two sequences and returns the first item
 ;; from each, then the second item from each, then the third, etc.
@@ -231,19 +231,19 @@
        (conj interleaved (first items-1) (first items-2)))
       interleaved)))
 
-(interleave* [1 2 3] [:a :b :c])
-(interleave* [1 2] [3 4 5 6])
-(interleave* [1 2 3 4] [5])
-(interleave* [30 20] [25 15])
+(comment (interleave* [1 2 3] [:a :b :c]))
+(comment (interleave* [1 2] [3 4 5 6]))
+(comment (interleave* [1 2 3 4] [5]))
+(comment (interleave* [30 20] [25 15]))
 
 ;; 40. Write a function which separates the items of a sequence by an arbitrary
 ;;     value.
 (defn interpose* [separator items]
   (pop (reduce #(conj %1 %2 separator) [] items)))
 
-(interpose* 0 [1 2 3])
-(apply str (interpose* ", " ["one" "two" "three"]))
-(interpose* :z [:a :b :c :d])
+(comment (interpose* 0 [1 2 3]))
+(comment (apply str (interpose* ", " ["one" "two" "three"])))
+(comment (interpose* :z [:a :b :c :d]))
 
 ;; 41. Write a function which drops every Nth item from a sequence.
 (defn drop-nth [items n]
@@ -259,18 +259,18 @@
          (conj result current)))
       result)))
 
-(drop-nth [1 2 3 4 5 6 7 8] 3)
-(drop-nth [:a :b :c :d :e :f] 2)
-(drop-nth [1 2 3 4 5 6] 4)
+(comment (drop-nth [1 2 3 4 5 6 7 8] 3))
+(comment (drop-nth [:a :b :c :d :e :f] 2))
+(comment (drop-nth [1 2 3 4 5 6] 4))
 
 ;; 42. Write a function which calculates factorials.
 (defn factorial [n]
   (reduce #(* %1 (inc %2)) 1 (range n)))
 
-(factorial 1)
-(factorial 3)
-(factorial 5)
-(factorial 8)
+(comment (factorial 1))
+(comment (factorial 3))
+(comment (factorial 5))
+(comment (factorial 8))
 
 ;; 43. Write a function which reverses the interleave process into x number of
 ;;     subsequences.
@@ -286,9 +286,9 @@
          (update result current-seq-index conj current)))
       result)))
 
-(reverse-interleave [1 2 3 4 5 6] 2)
-(reverse-interleave (range 9) 3)
-(reverse-interleave (range 10) 5)
+(comment (reverse-interleave [1 2 3 4 5 6] 2))
+(comment (reverse-interleave (range 9) 3))
+(comment (reverse-interleave (range 10) 5))
 
 ;; 44. Write a function which can rotate a sequence in either direction.
 (defn rotate [n items]
@@ -298,21 +298,21 @@
             (- c (mod (abs n) c)))]
     (concat (drop n items) (take n items))))
 
-(rotate 2 [1 2 3 4 5])
-(rotate -2 [1 2 3 4 5])
-(rotate 6 [1 2 3 4 5])
-(rotate 1 '(:a :b :c))
-(rotate -4 '(:a :b :c))
+(comment (rotate 2 [1 2 3 4 5]))
+(comment (rotate -2 [1 2 3 4 5]))
+(comment (rotate 6 [1 2 3 4 5]))
+(comment (rotate 1 '(:a :b :c)))
+(comment (rotate -4 '(:a :b :c)))
 
 ;; 45. The iterate function can be used to produce an infinite lazy sequence.
-(take 5 (iterate #(+ 3 %) 1))
+(comment (take 5 (iterate #(+ 3 %) 1)))
 
 ;; 46. Write a higher-order function which flips the order of the arguments of
 ;;     an input function.
 (defn flip-args [f]
   (fn [& args] (apply f (reverse args))))
 
-((flip-args nth) 2 [1 2 3 4 5])
+(comment ((flip-args nth) 2 [1 2 3 4 5]))
 
 ;; 47-48 on 4Clojure.
 
@@ -320,9 +320,9 @@
 (defn split-sequence [at-pos items]
   [(vec (take at-pos items)) (vec (drop at-pos items))])
 
-(split-sequence 3 [1 2 3 4 5 6])
-(split-sequence 1 [:a :b :c :d])
-(split-sequence 2 [[1 2] [3 4] [5 6]])
+(comment (split-sequence 3 [1 2 3 4 5 6]))
+(comment (split-sequence 1 [:a :b :c :d]))
+(comment (split-sequence 2 [[1 2] [3 4] [5 6]]))
 
 ;; 50. Write a function which takes a sequence consisting of items with
 ;;     different types and splits them up into a set of homogeneous
@@ -341,6 +341,6 @@
            (assoc classified t [current]))))
       (set (vals classified)))))
 
-(classify [1 :a 2 :b 3 :c])
-(classify [:a "foo"  "bar" :b])
-(classify [[1 2] :a [3 4] 5 6 :b])
+(comment (classify [1 :a 2 :b 3 :c]))
+(comment (classify [:a "foo"  "bar" :b]))
+(comment (classify [[1 2] :a [3 4] 5 6 :b]))
