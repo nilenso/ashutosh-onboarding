@@ -13,8 +13,8 @@
 (nth-element [0 1 2 3] 5)
 
 ;; 22. Write a function which returns the total number of elements in a sequence.
-(defn count-total [init-sequence]
-  (loop [count 0, remaining init-sequence]
+(defn count-total [s]
+  (loop [count 0, remaining s]
     (if (seq remaining)
       (recur (inc count) (rest remaining))
       count)))
@@ -25,8 +25,9 @@
 
 
 ;; 23. Write a function which reverses a sequence.
-(defn reverse-sequence [init-sequence]
-  (loop [remaining init-sequence, reversed []]
+(defn reverse-sequence [s]
+  (loop [remaining s
+         reversed []]
     (if (seq remaining)
       (recur (rest remaining) (cons (first remaining) reversed))
       reversed)))
@@ -43,10 +44,11 @@
 
 ;; 25. Write a function which returns only the odd numbers from a sequence.
 (defn filter-odd [nums]
-  (loop [odds [], [current & remaining :as nums] nums]
+  (loop [odds []
+         [current & remaining :as nums] nums]
     (if (seq nums)
       (recur
-       (if (== 0 (mod current 2))
+       (if (zero? (mod current 2))
          odds
          (conj odds current))
        remaining)
@@ -61,7 +63,8 @@
   (cond
     (== count 0) []
     (== count 1) [1]
-    :else (loop [x (- count 2) , fib-nums [1 1]]
+    :else (loop [x (- count 2)
+                 fib-nums [1 1]]
             (if (pos? x)
               (recur (dec x) (conj
                               fib-nums
@@ -194,7 +197,8 @@
 
 ;; 34. Write a function which creates a list of all integers in a given range.
 (defn range* [start end]
-  (loop [current start, items []]
+  (loop [current start
+         items []]
     (if (< current end)
       (recur (inc current) (conj items current))
       (seq items))))
@@ -217,7 +221,9 @@
 ;; 39. Write a function which takes two sequences and returns the first item
 ;; from each, then the second item from each, then the third, etc.
 (defn interleave* [items-1 items-2]
-  (loop [items-1 items-1, items-2 items-2, interleaved (empty items-1)]
+  (loop [items-1 items-1
+         items-2 items-2
+         interleaved (empty items-1)]
     (if (and (seq items-1) (seq items-2))
       (recur
        (rest items-1)
@@ -241,12 +247,14 @@
 
 ;; 41. Write a function which drops every Nth item from a sequence.
 (defn drop-nth [items n]
-  (loop [[current & remaining :as items] items, index 1, result []]
+  (loop [[current & remaining :as items] items
+         index 1
+         result []]
     (if items
       (recur
        remaining
        (inc index)
-       (if (= 0 (mod index n))
+       (if (zero? (mod index n))
          result
          (conj result current)))
       result)))
@@ -322,7 +330,8 @@
 ;;     maintained, but the sub-sequences themselves can be returned in any order
 ;;     (this is why 'set' is used in the test cases).
 (defn classify [items]
-  (loop [[current & remaining :as items] items, classified {}]
+  (loop [[current & remaining :as items] items
+         classified {}]
     (if items
       (recur
        remaining
