@@ -460,3 +460,146 @@
 (comment (take 5 (reductions* + (range))))
 (comment (reductions* conj [1] [2 3 4]))
 (comment (reductions* * 2 [3 4 5]))
+
+;; 61. Write a function which takes a vector of keys and a vector of values and
+;;     constructs a map from them.
+(defn zipmap* [keys values]
+  (loop [result {}
+         [current-key & remaining-keys] keys
+         [current-value & remaining-values] values]
+    (if (or (nil? current-key) (nil? current-value))
+      result
+      (recur (conj result {current-key current-value}) remaining-keys remaining-values))))
+
+(comment (zipmap* [:a :b :c] [1 2 3]))
+(comment (zipmap* [1 2 3 4] ["one" "two" "three"]))
+(comment (zipmap* [:foo :bar] ["foo" "bar" "baz"]))
+
+;; 62. Given a side-effect free function f and an initial value x write a
+;;     function which returns an infinite lazy sequence of x, (f x), (f (f x)),
+;;     (f (f (f x))), etc.
+(defn iterate* [f x]
+  (lazy-seq (cons x (iterate* f (apply f [x])))))
+
+(comment (take 5 (iterate* #(* 2 %) 1)))
+(comment (take 100 (iterate* inc 0)))
+(comment (take 9 (iterate* #(inc (mod % 3)) 1)))
+
+;; 63. Given a function f and a sequence s, write a function which returns a
+;;     map. The keys should be the values of f applied to each item in s. The
+;;     value at each key should be a vector of corresponding items in the order
+;;     they appear in s.
+(defn group-by* [f s]
+  (loop [result {}
+         [current & remaining] s]
+    (if (nil? current)
+      result
+      (let [v (apply f [current])]
+        (recur
+         (if (contains? result v)
+           (update result v conj current)
+           (assoc result v [current]))
+         remaining)))))
+
+(comment (group-by* #(> % 5) #{1 3 6 8}))
+(comment (group-by* #(apply / %) [[1 2] [2 4] [4 6] [3 6]]))
+(comment (group-by* count [[1] [1 2] [3] [1 2 3] [2 3]]))
+
+;; 64 on 4Clojure.
+
+;; 65. Clojure has many collection types, which act in subtly different ways.
+;;     The core functions typically convert them into a uniform "sequence" type
+;;     and work with them that way, but it can be important to understand the
+;;     behavioral and performance differences so that you know which kind is
+;;     appropriate for your application. Write a function which takes a
+;;     collection and returns one of :map, :set, :list, or :vector - describing
+;;     the type of collection it was given. You won't be allowed to inspect
+;;     their class or use the built-in predicates like list? - the point is to
+;;     poke at them and understand their behavior.
+;;
+;; Special Restrictions:
+;; class,type,Class,vector?,sequential?,list?,seq?,map?,set?,instance?,getClass
+(defn type-coll [coll]
+  (let [c (+ 3 (count coll))
+        coll (conj coll [:a :b] [:a :b] [:c :d])
+        nc (count coll)]
+    (cond
+      (= :b (get coll :a)) :map
+      (not= c nc) :set
+      (= [:c :d] (first coll)) :list
+      (= [:c :d] (last coll)) :vector)))
+
+(comment (type-coll {:a 1, :b 2}))
+(comment (type-coll (range (rand-int 20))))
+(comment (type-coll [1 2 3 4 5 6]))
+(comment (type-coll #{10 (rand-int 5)}))
+(comment (map type-coll [{} #{} [] ()]))
+
+;; 66. Given two integers, write a function which returns the greatest common
+;;     divisor.
+;;
+;; https://en.wikipedia.org/wiki/Euclidean_algorithm
+(defn gcd [x y]
+  (loop [a (max x y)
+         b (min x y)]
+    (if (zero? b)
+      a
+      (recur b (mod a b)))))
+
+(comment (gcd 2 4))
+(comment (gcd 10 5))
+(comment (gcd 5 7))
+(comment (gcd 1023 858))
+
+;; 67. Write a function which returns the first x number of prime numbers.
+(defn prime-numbers [x]
+  (letfn [(prime? [n]
+            (cond
+              (<= n 1) false
+              (<= n 3) true
+              :else (loop [[i & remaining] (range 2 (inc (Math/sqrt n)))]
+                      (cond
+                        (nil? i) true
+                        (zero? (rem n i)) false
+                        :else (recur remaining)))))]
+    (take x (filter prime? (range)))))
+
+(comment (prime-numbers 2))
+(comment (prime-numbers 5))
+(comment (last (prime-numbers 100)))
+
+;; 68 on 4Clojure
+
+;; 69. Write a function which takes a function f and a variable number of maps.
+;;     Your function should return a map that consists of the rest of the maps
+;;     conj-ed onto the first. If a key occurs in more than one map, the
+;;     mapping(s) from the latter (left-to-right) should be combined with the
+;;     mapping in the result by calling (f val-in-result val-in-latter)
+(defn merge-with* [f map & maps]
+  (reduce
+   (fn [result map]
+     (reduce
+      (fn [result [key val]]
+        (if (contains? result key)
+          (update result key f val)
+          (assoc result key val)))
+      result
+      map))
+   map
+   maps))
+
+(comment (merge-with* * {:a 2, :b 3, :c 4} {:a 2} {:b 2} {:c 5}))
+(comment (merge-with* - {1 10, 2 20} {1 3, 2 10, 3 15}))
+(comment (merge-with* concat {:a [3], :b [6]} {:a [4 5], :c [8 9]} {:b [7]}))
+
+;; 70. Write a function which splits a sentence up into a sorted list of words.
+;;     Capitalization should not affect sort order and punctuation should be
+;;     ignored.
+(defn split-sort-words [s]
+  (sort
+   #(compare (str/lower-case %1) (str/lower-case %2))
+   (re-seq #"\w+" s)))
+
+(comment (split-sort-words "Have a nice day."))
+(comment (split-sort-words "Clojure is a fun language!"))
+(comment (split-sort-words "Fools fall for foolish follies."))
