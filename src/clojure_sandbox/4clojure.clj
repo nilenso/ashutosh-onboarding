@@ -601,3 +601,53 @@
 (comment (split-sort-words "Have a nice day."))
 (comment (split-sort-words "Clojure is a fun language!"))
 (comment (split-sort-words "Fools fall for foolish follies."))
+
+;; 71-72 on 4Clojure.
+
+;; 73. A tic-tac-toe board is represented by a two dimensional vector. X is
+;;     represented by :x, O is represented by :o, and empty is represented by
+;;     :e. A player wins by placing three Xs or three Os in a horizontal,
+;;     vertical, or diagonal row. Write a function which analyzes a tic-tac-toe
+;;     board and returns :x if X has won, :o if O has won, and nil if neither
+;;     player has won.
+(defn winner? [board]
+  (let [winning-vectors (concat
+                         (partition 3 (for [x (range 3) y (range 3)] [x y])) ; rows
+                         (partition 3 (for [x (range 3) y (range 3)] [y x])) ; columns
+                         (list (list [0 0] [1 1] [2 2]) (list [2 0] [1 1] [0 2])))] ; diagonals
+    (loop [[[first-cell second-cell third-cell] & remaining] winning-vectors]
+      (let [first-val (get-in board first-cell)
+            second-val (get-in board second-cell)
+            third-val (get-in board third-cell)]
+        (cond
+          (and (not= :e first-val) (= first-val second-val third-val)) first-val
+          (empty? remaining) nil
+          :else (recur remaining))))))
+
+(comment (winner? [[:e :e :e]
+                   [:e :e :e]
+                   [:e :e :e]]))
+
+(comment (winner? [[:x :e :o]
+                   [:x :e :e]
+                   [:x :e :o]]))
+
+(comment (winner? [[:e :x :e]
+                   [:o :o :o]
+                   [:x :e :x]]))
+
+(comment (winner? [[:x :e :o]
+                   [:x :x :e]
+                   [:o :x :o]]))
+
+(comment (winner? [[:x :e :e]
+                   [:o :x :e]
+                   [:o :e :x]]))
+
+(comment (winner? [[:x :e :o]
+                   [:x :o :e]
+                   [:o :e :x]]))
+
+(comment (winner? [[:x :o :x]
+                   [:x :o :x]
+                   [:o :x :o]]))
