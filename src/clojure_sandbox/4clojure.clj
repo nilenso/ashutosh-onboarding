@@ -490,16 +490,14 @@
 ;;     value at each key should be a vector of corresponding items in the order
 ;;     they appear in s.
 (defn group-by* [f s]
-  (loop [result {}
-         [current & remaining] s]
-    (if (nil? current)
-      result
-      (let [v (apply f [current])]
-        (recur
-         (if (contains? result v)
-           (update result v conj current)
-           (assoc result v [current]))
-         remaining)))))
+  (reduce
+   (fn [acc current]
+     (let [v (apply f [current])]
+       (if (contains? acc v)
+         (update acc v conj current)
+         (assoc acc v [current]))))
+   {}
+   s))
 
 (comment (group-by* #(> % 5) #{1 3 6 8}))
 (comment (group-by* #(apply / %) [[1 2] [2 4] [4 6] [3 6]]))
@@ -575,17 +573,17 @@
 ;;     conj-ed onto the first. If a key occurs in more than one map, the
 ;;     mapping(s) from the latter (left-to-right) should be combined with the
 ;;     mapping in the result by calling (f val-in-result val-in-latter)
-(defn merge-with* [f map & maps]
+(defn merge-with* [f first-map & maps]
   (reduce
-   (fn [result map]
+   (fn [acc current-map]
      (reduce
       (fn [result [key val]]
         (if (contains? result key)
           (update result key f val)
           (assoc result key val)))
-      result
-      map))
-   map
+      acc
+      current-map))
+   first-map
    maps))
 
 (comment (merge-with* * {:a 2, :b 3, :c 4} {:a 2} {:b 2} {:c 5}))
