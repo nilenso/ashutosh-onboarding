@@ -686,10 +686,10 @@
      0
      (range 1 x))))
 
-(eulers-totient 1)
-(eulers-totient 10)
-(eulers-totient 40)
-(eulers-totient 99)
+(comment (eulers-totient 1))
+(comment (eulers-totient 10))
+(comment (eulers-totient 40))
+(comment (eulers-totient 99))
 
 ;; 76 on 4Clojure.
 
@@ -729,3 +729,62 @@
 (comment (letfn [(my-even? [x] (if (zero? x) true #(my-odd? (dec x))))
                  (my-odd? [x] (if (zero? x) false #(my-even? (dec x))))]
            (map (partial trampoline* my-even?) (range 6))))
+
+
+;; 79. Write a function which calculates the sum of the minimal path through a
+;;     triangle. The triangle is represented as a vector of vectors. The path
+;;     should start at the top of the triangle and move to an adjacent number on
+;;     the next row until the bottom of the triangle is reached.
+(defn minimal-path-in-triangle
+  ([t] (minimal-path-in-triangle t [0 0]))
+  ([t [start-x start-y]]
+   (if (< start-y (count t))
+     (+
+      (get-in t [start-y start-x])
+      (min
+       (minimal-path-in-triangle t [start-x (inc start-y)])
+       (minimal-path-in-triangle t [(inc start-x) (inc start-y)])))
+     0)))
+
+(comment (minimal-path-in-triangle [[1]
+                                    [2 4]
+                                    [5 1 4]
+                                    [2 3 4 5]]))
+
+(comment (minimal-path-in-triangle [[3]
+                                    [2 4]
+                                    [1 9 3]
+                                    [9 9 2 4]
+                                    [4 6 6 7 8]
+                                    [5 7 3 5 1 4]]))
+
+;; 80. A number is "perfect" if the sum of its divisors equal the number itself.
+;;     6 is a perfect number because 1+2+3=6. Write a function which returns
+;;     true for perfect numbers and false otherwise.
+(defn perfect-divisor? [n]
+  (=
+   n
+   (reduce
+    (fn [sum current]
+      (if (zero? (rem n current))
+        (+ sum current)
+        sum))
+    1
+    (range 2 n))))
+
+(comment (perfect-divisor? 6))
+(comment (perfect-divisor? 7))
+(comment (perfect-divisor? 496))
+(comment (perfect-divisor? 500))
+(comment (perfect-divisor? 8128))
+
+;; 81. Write a function which returns the intersection of two sets. The
+;;     intersection is the sub-set of items that each set has in common.
+;;
+;; Special Restrictions : intersection
+(defn intersection* [& sets]
+  (reduce #(set (filter %1 %2)) (first sets) (rest sets)))
+
+(comment (intersection* #{0 1 2 3} #{2 3 4 5}))
+(comment (intersection* #{0 1 2} #{3 4 5}))
+(comment (intersection* #{:a :b :c :d} #{:c :e :a :f :d}))
