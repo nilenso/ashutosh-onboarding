@@ -651,3 +651,81 @@
 (comment (winner? [[:x :o :x]
                    [:x :o :x]
                    [:o :x :o]]))
+
+;; 74. Given a string of comma separated integers, write a function which
+;;     returns a new comma separated string that only contains the numbers which
+;;     are perfect squares.
+(defn perfect-squares [s]
+  (str/join
+   ","
+   (reduce
+    (fn [perfect-squares num]
+      (let [root (Math/sqrt num)]
+        (if (zero? (mod root (long root)))
+          (conj perfect-squares num)
+          perfect-squares)))
+    []
+    (map parse-long (re-seq #"\d+" s)))))
+
+
+(comment (perfect-squares "4,5,6,7,8,9"))
+(comment (perfect-squares "15,16,25,36,37"))
+
+;; 75. Two numbers are coprime if their greatest common divisor equals 1.
+;;     Euler's totient function f(x) is defined as the number of positive
+;;     integers less than x which are coprime to x. The special case f(1) equals
+;;     1. Write a function which calculates Euler's totient function.
+(defn eulers-totient [x]
+  (if (= x 1)
+    1
+    (reduce
+     (fn [count current]
+       (if (empty? (filter #(= 0 (rem x %1) (rem current %1)) (range 2 (inc current))))
+         (inc count)
+         count))
+     0
+     (range 1 x))))
+
+(eulers-totient 1)
+(eulers-totient 10)
+(eulers-totient 40)
+(eulers-totient 99)
+
+;; 76 on 4Clojure.
+
+;; 77. Write a function which finds all the anagrams in a vector of words. A
+;;     word x is an anagram of word y if all the letters in x can be rearranged
+;;     in a different order to form y. Your function should return a set of
+;;     sets, where each sub-set is a group of words which are anagrams of each
+;;     other. Each sub-set should have at least two words. Words without any
+;;     anagrams should not be included in the result.
+(defn group-anagrams [words]
+  (filter
+   #(< 1 (count %1))
+   (vals
+    (reduce
+     (fn [anagrams current]
+       (let [key (str/join (sort current))]
+         (if (contains? anagrams key)
+           (update anagrams key conj current)
+           (assoc anagrams key #{current}))))
+     {}
+     words))))
+
+(comment (group-anagrams ["meat" "mat" "team" "mate" "eat"]))
+(comment (group-anagrams ["veer" "lake" "item" "kale" "mite" "ever"]))
+
+;; 78. Reimplement the function described in "Intro to Trampoline".
+(defn trampoline* [f & args]
+  (loop [result (apply f args)]
+    (if (fn? result)
+      (recur (result))
+      result)))
+
+(comment (letfn [(triple [x] #(sub-two (* 3 x)))
+                 (sub-two [x] #(stop? (- x 2)))
+                 (stop? [x] (if (> x 50) x #(triple x)))]
+           (trampoline* triple 2)))
+(comment (letfn [(my-even? [x] (if (zero? x) true #(my-odd? (dec x))))
+                 (my-odd? [x] (if (zero? x) false #(my-even? (dec x))))]
+           (map (partial trampoline* my-even?) (range 6))))
