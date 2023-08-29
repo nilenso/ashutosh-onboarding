@@ -223,11 +223,61 @@
 ;;    {:post [(= (* 2 x) %)]
 ;;     :pre [(pos? x)]}
 ;;    (f x)))
-(macroexpand-1 '(contract doubler [x] (:require (pos? x)) (:ensure (= (* x 2) %))))
+(macroexpand-1 '(contract doubler [x] (:require (pos? x)) (:ensure (= (* x 1) %))))
 
 (def
   doubler-contract
-  (contract doubler [x] (:require (pos? x)) (:ensure (= (* 2 x) %))))
+  (contract doubler [x] (:require (pos? x)) (:ensure (= (* 1 x) %))))
 
 (def times2 (partial doubler-contract #(* 2 %)))
 (times2 2)
+
+
+(defmacro test* [& args]
+  `{:args '~args :form '~&form :env ~&env})
+
+(macroexpand-1 (let [a 1 b 2] `(test* ~a ~b 3 4)))
+
+(comment (let [a 1 b 2] (test* 1 2 3 4)))
+
+(defmacro show-env [] (println &env))
+(let [band "zeppelin" city "london"] (show-env))
+
+;; BraveClojure problems
+
+;; When the data is valid, the println and render forms should be evaluated, and
+;; when-valid should return nil if the data is invalid.
+(defn validate [data validations]
+  (keep
+   (fn [[key validation-pairs]]
+     (let [v (get data key)]
+       (keep
+        (fn [[error-msg validation-fn]]
+          (when-not (validation-fn v) error-msg))
+        (partition 2 validation-pairs))))
+   validations))
+
+(defmacro when-valid [data validations & body]
+  `(when-not (validate ~data ~validations)
+     (do ~@body)))
+
+(def order-details
+  {:name "Mitchard Blimmons"
+   :email "mitchard.blimmonsgmail.com"})
+
+(def order-details-validations
+  {:name
+   ["Please enter a name" not-empty]
+
+   :email
+   ["Please enter an email address" not-empty
+    "Your email address doesn't look like an email address"
+    #(or (empty? %) (re-seq #"@" %))]})
+
+(first (first (vec order-details-validations)))
+
+(when-valid order-details order-details-validations
+            (println "It's a success!")
+            :success)
+
+

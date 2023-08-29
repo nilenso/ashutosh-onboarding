@@ -208,5 +208,3 @@
 (astar [0 0]
        900
        world)
-
-(deftest)
