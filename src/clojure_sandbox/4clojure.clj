@@ -1,5 +1,6 @@
 (ns clojure-sandbox.4clojure
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str :only [join]]
+            [clj-fuzzy.metrics :as m :only [levenshtein]]))
 
 ;; 21. Write a function which returns the Nth element from a sequence.
 (defn nth-element [[current & remaining :as items] position]
@@ -789,3 +790,67 @@
 (comment (intersection* #{0 1 2 3} #{2 3 4 5}))
 (comment (intersection* #{0 1 2} #{3 4 5}))
 (comment (intersection* #{:a :b :c :d} #{:c :e :a :f :d}))
+
+;; 82. A word chain consists of a set of words ordered so that each word differs
+;;     by only one letter from the words directly before and after it. The one
+;;     letter difference can be either an insertion, a deletion, or a
+;;     substitution. Here is an example word chain: cat -> cot -> coat -> oat ->
+;;     hat -> hot -> hog -> dog Write a function which takes a sequence of
+;;     words, and returns true if they can be arranged into one continous word
+;;     chain, and false if they cannot.
+(defn- neighbour? [w1 w2]
+  (if
+   (or (empty? w1) (empty? w2))
+    true
+    (= 1 (m/levenshtein w1 w2))))
+
+(defn word-chain?
+  ([words] (force (word-chain? words [])))
+  ([words chain]
+   (delay
+     (if (empty? words)
+       true
+       (some
+        (fn [[current & remaining]]
+          (when (neighbour? (peek chain) current)
+            (force (word-chain? (into #{} remaining) (conj chain current)))))
+        (map #(rotate % words) (range (count words))))))))
+
+(comment (word-chain? #{"hat" "coat" "dog" "cat" "oat" "cot" "hot" "hog"}))
+(comment (word-chain? #{"cot" "hot" "bat" "fat"}))
+(comment (word-chain? #{"to" "top" "stop" "tops" "toss"}))
+(comment (word-chain? #{"spout" "do" "pot" "pout" "spot" "dot"}))
+(comment (word-chain? #{"share" "hares" "shares" "hare" "are"}))
+(comment (word-chain? #{"share" "hares" "hare" "are"}))
+
+;; 83. Write a function which takes a variable number of booleans. Your function
+;;     should return true if some of the parameters are true, but not all of the
+;;     parameters are true. Otherwise your function should return false.
+(defn some* [& args]
+  (let [total (count args)
+        true-count (count (filter true? args))]
+    (< 0 true-count total)))
+
+(comment (some* false false))
+(comment (some* true false))
+(comment (some* true))
+(comment (some* false true false))
+(comment (some* true true true))
+(comment (some* true true true false))
+
+;; 84. Write a function which generates the transitive closure of a binary
+;;     relation. The relation will be represented as a set of 2 item vectors.
+;; e.g. [a -> b] [b -> c] [c -> d] => [a -> d]
+(defn transitive-closures [relations]
+  (let [derived-relations (remove
+                           nil?
+                           (for [[aa ab] relations
+                                 [ba bb] relations] (when (= ab ba) [aa bb])))
+        all-relations (into relations derived-relations)]
+    (if (= all-relations relations)
+      relations
+      (recur all-relations))))
+
+(comment (transitive-closures #{[8 4] [9 3] [4 2] [27 9]}))
+(comment (transitive-closures  #{["cat" "man"] ["man" "snake"] ["spider" "cat"]}))
+(comment (transitive-closures #{["father" "son"] ["uncle" "cousin"] ["son" "grandson"]}))
