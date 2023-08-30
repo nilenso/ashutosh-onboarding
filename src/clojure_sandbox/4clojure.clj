@@ -854,3 +854,20 @@
 (comment (transitive-closures #{[8 4] [9 3] [4 2] [27 9]}))
 (comment (transitive-closures  #{["cat" "man"] ["man" "snake"] ["spider" "cat"]}))
 (comment (transitive-closures #{["father" "son"] ["uncle" "cousin"] ["son" "grandson"]}))
+
+;; 85. Write a function which generates the power set of a given set. The power
+;;     set of a set x is the set of all subsets of x, including the empty set
+;;     and x itself.
+(defn- back-track [x current i]
+  (into
+   #{current}
+   (for [j (range i (count x))] (back-track x (conj current (nth x j)) j))))
+
+(defn power-set [x]
+  (if (empty? x)
+    #{x}
+    (back-track (seq x) #{} 0)))
+
+(comment (power-set #{1 :a}))
+(comment (power-set #{}))
+(comment (power-set #{1 2 3}))
