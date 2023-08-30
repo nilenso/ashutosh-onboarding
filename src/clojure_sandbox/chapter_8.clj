@@ -247,22 +247,40 @@
 
 ;; When the data is valid, the println and render forms should be evaluated, and
 ;; when-valid should return nil if the data is invalid.
-(defn validate [data validations]
-  (keep
-   (fn [[key validation-pairs]]
-     (let [v (get data key)]
-       (keep
-        (fn [[error-msg validation-fn]]
-          (when-not (validation-fn v) error-msg))
-        (partition 2 validation-pairs))))
-   validations))
+(defn valid?
+  "Returns false if data doesn't pass any validations. Returns logical true otherwise."
+  [data validations]
+  (let [validation-fns (map
+                        (fn [[key msg-fn-pairs]] [key (take-nth 2 (rest msg-fn-pairs))])
+                        validations)] ; discard error messages from validations.
+    (every?
+     (fn [[key fns]]
+       (let [v (get data key)]
+         (every? #(% v) fns)))
+     validation-fns)))
+
+(defn explain-errors
+  "Returns a map of keys in data to error messages for failed validations."
+  [data validations]
+  (reduce (fn [errors [key msg-fn-pairs]]
+            (let [v (get data key)
+                  msgs (remove nil?
+                               (map (fn [[msg validation-fn]]
+                                      (when-not (validation-fn v) msg))
+                                    (partition 2 msg-fn-pairs)))]
+              (if (empty? msgs)
+                errors
+                (conj errors {key msgs}))))
+          {}
+          validations))
 
 (defmacro when-valid [data validations & body]
-  `(when-not (validate ~data ~validations)
-     (do ~@body)))
+  `(if (valid? ~data ~validations)
+     (do ~@body)
+     (explain-errors ~data ~validations)))
 
 (def order-details
-  {:name "Mitchard Blimmons"
+  {:name ""
    :email "mitchard.blimmonsgmail.com"})
 
 (def order-details-validations
@@ -274,10 +292,6 @@
     "Your email address doesn't look like an email address"
     #(or (empty? %) (re-seq #"@" %))]})
 
-(first (first (vec order-details-validations)))
-
 (when-valid order-details order-details-validations
             (println "It's a success!")
             :success)
-
-
