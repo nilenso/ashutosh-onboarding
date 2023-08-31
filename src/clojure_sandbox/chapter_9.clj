@@ -54,3 +54,66 @@ universe-2/x
 (walk a-cat)
 (walk morris-the-cat)
 (walk morris-with-ptsd)
+
+(defmulti compiler :os)
+(defmethod compiler ::unix [m] (get m :c-compiler))
+(defmethod compiler ::osx  [m] (get m :llvm-compiler))
+
+(def clone (partial beget {}))
+(def unix   {:os ::unix, :c-compiler "cc", :home "/home", :dev "/dev"})
+(def osx  (-> (clone unix)
+              (put :os ::osx)
+              (put :llvm-compiler "clang")
+              (put :home "/Users")))
+
+(compiler unix)
+(compiler osx)
+
+(defmulti home :os)
+(defmethod home ::unix [m] (get m :home))
+
+(home unix)
+(comment (home osx))
+
+(derive ::osx ::unix)
+(home osx)
+
+(parents ::osx)
+(ancestors ::osx)
+(descendants ::unix)
+(isa? ::osx ::unix)
+(isa? ::unix ::osx)
+
+(derive ::osx ::bsd)
+(defmethod home ::bsd [_] "/home")
+
+(comment (home osx))
+(prefer-method home ::unix ::bsd)
+(home osx)
+
+(defmulti  compile-cmd  (juxt :os compiler))
+(defmethod compile-cmd [::osx "clang"] [m]
+  (str "/usr/bin/" (compiler m)))
+
+(defmethod compile-cmd :default [m]
+  (str "Unsure where to locate " (compiler m)))
+
+(compile-cmd osx)
+(compile-cmd unix)
+
+;; persistent BST impl with records (Chapter 6 impl uses maps.)
+(defrecord TreeNode [val l r])
+(assoc (TreeNode. 1 nil nil) :l (TreeNode. 2 nil nil))
+
+(defn xconj [t v]
+  (cond
+    (nil? t) (TreeNode. v nil nil)
+    (< v (:val t)) (TreeNode. (:val t) (xconj (:l t) v) (:r t))
+    :else (TreeNode. (:val t) (:l t) (xconj (:r t) v))))
+
+(defn xseq [t]
+  (when t
+    (concat (xseq (:l t)) [(:val t)] (xseq (:r t)))))
+
+(def sample-tree (reduce xconj nil [3 5 2 4 6]))
+(xseq sample-tree)
