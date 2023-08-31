@@ -275,13 +275,14 @@
           validations))
 
 (defmacro when-valid [data validations & body]
-  `(if (valid? ~data ~validations)
-     (do ~@body)
-     (explain-errors ~data ~validations)))
+  `(let [errors# (explain-errors ~data ~validations)]
+     (if (empty? errors#)
+       (do ~@body)
+       errors#)))
 
 (def order-details
   {:name ""
-   :email "mitchard.blimmonsgmail.com"})
+   :email ""})
 
 (def order-details-validations
   {:name
