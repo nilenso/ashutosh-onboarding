@@ -117,3 +117,115 @@ universe-2/x
 
 (def sample-tree (reduce xconj nil [3 5 2 4 6]))
 (xseq sample-tree)
+
+(defprotocol FIXO
+  (fixo-push [fixo value])
+  (fixo-pop [fixo])
+  (fixo-peek [fixo]))
+
+(extend-type TreeNode
+  FIXO
+  (fixo-push [node val] (xconj node val)))
+
+(extend-type clojure.lang.PersistentVector
+  FIXO
+  (fixo-push [vector* val] (conj vector* val)))
+
+(fixo-push sample-tree 10)
+(fixo-push [1] 10)
+(comment (fixo-peek sample-tree))
+
+(extend-type TreeNode
+  FIXO
+  (fixo-peek [node]
+    (if-let [l (get node :l)]
+      (recur l)
+      (get node :val))))
+
+(fixo-peek sample-tree)
+;; the following throws an error because a protocol must be fully extended to
+;; have an effect.
+(comment (fixo-push sample-tree 20))
+
+
+;; using mix-ins
+(def fixo-push-mixin {:fixo-push (fn [vector* val] (conj vector* val))})
+(def fixo-peek-mixin {:fixo-peek (fn [vector*] (peek vector*))})
+(def fixo-pop-mixin {:fixo-pop (fn [vector*] (pop vector*))})
+(extend clojure.lang.PersistentVector FIXO (merge fixo-push-mixin fixo-peek-mixin fixo-pop-mixin))
+(fixo-push [1 2 3] 4)
+(fixo-peek [1 2 3 4])
+(fixo-pop [1 2 3 4])
+
+(defn fixed-fixo
+  ([limit] (fixed-fixo limit []))
+  ([limit vector]
+   (reify FIXO
+     (fixo-push [this value]
+       (if (< (count vector) limit)
+         (fixed-fixo limit (conj vector value))
+         this))
+     (fixo-peek [_]
+       (peek vector))
+     (fixo-pop [_]
+       (pop vector)))))
+
+(fixo-peek (fixo-push (fixed-fixo 0) 10))
+
+;; inline protocol implementation with defrecord.
+(defrecord AnotherTreeNode [val l r] FIXO
+           (fixo-push [_ v] (if (< v val)
+                              (AnotherTreeNode. val (fixo-push l v) r)
+                              (AnotherTreeNode. val l (fixo-push r v))))
+           (fixo-peek [_] (if l (fixo-peek l) val)) ; recur won't work
+           (fixo-pop [_] (if l (AnotherTreeNode. val (fixo-pop l) r) r)))
+
+(extend-type nil FIXO
+             (fixo-push [_ v] (AnotherTreeNode. v nil nil))
+             (fixo-peek [_] nil)
+             (fixo-pop [_] nil))
+
+(def sample-tree2 (reduce fixo-push (AnotherTreeNode. 3 nil nil) [5 2 4 6]))
+(xseq sample-tree2)
+
+;; records are maps (already implement ISeq) so the following fails.
+(comment (defrecord InfiniteConstant [i]
+           clojure.lang.ISeq
+           (seq [this]
+             (lazy-seq (cons i (seq this))))))
+
+;; following works!
+(deftype InfiniteConstant [i]
+  clojure.lang.ISeq
+  (seq [this]
+    (lazy-seq (cons i (seq this)))))
+
+(take 3 (InfiniteConstant. 5))
+
+;; And it doesn't implement keyword look ups and other map things.
+(:i (InfiniteConstant. 5))
+
+(deftype FinalTreeNode [val l r]
+  FIXO
+  (fixo-push [_ v] (if (< v val)
+                     (FinalTreeNode. val (fixo-push l v) r)
+                     (FinalTreeNode. val l (fixo-push r v))))
+  (fixo-peek [_] (if l (fixo-peek l) val))
+  (fixo-pop [_] (if l
+                  (FinalTreeNode. val (fixo-pop l) r)
+                  r))
+
+  clojure.lang.IPersistentStack
+  (cons [this v] (fixo-push this v))
+  (peek [this] (fixo-peek this))
+  (pop [this] (fixo-pop this))
+
+  clojure.lang.Seqable
+  (seq [_] (concat (seq l) [val] (seq r))))
+
+(extend-type nil
+  FIXO
+  (fixo-push [_ v]
+    (FinalTreeNode. v nil nil)))
+
+(seq (into (FinalTreeNode. 3 nil nil) [5 2 4 6]))
