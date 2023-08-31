@@ -805,16 +805,15 @@
     (= 1 (m/levenshtein w1 w2))))
 
 (defn word-chain?
-  ([words] (force (word-chain? words [])))
+  ([words] (word-chain? words []))
   ([words chain]
-   (delay
-     (if (empty? words)
-       true
-       (some
-        (fn [[current & remaining]]
-          (when (neighbour? (peek chain) current)
-            (force (word-chain? (into #{} remaining) (conj chain current)))))
-        (map #(rotate % words) (range (count words))))))))
+   (if (empty? words)
+     true
+     (some
+      (fn [[current & remaining]]
+        (when (neighbour? (peek chain) current)
+          (word-chain? (into #{} remaining) (conj chain current))))
+      (map #(rotate % words) (range (count words)))))))
 
 (comment (word-chain? #{"hat" "coat" "dog" "cat" "oat" "cot" "hot" "hog"}))
 (comment (word-chain? #{"cot" "hot" "bat" "fat"}))
