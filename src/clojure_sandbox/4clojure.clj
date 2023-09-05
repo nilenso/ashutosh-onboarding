@@ -1,5 +1,5 @@
 (ns clojure-sandbox.4clojure
-  (:require [clojure.string :as str :only [join]]
+  (:require [clojure.string :as string :only [join]]
             [clj-fuzzy.metrics :as m :only [levenshtein]]))
 
 ;; 21. Write a function which returns the Nth element from a sequence.
@@ -107,7 +107,7 @@
 (defn filter-capital-letters [[current & remaining :as s]]
   (if (seq s)
     (if (Character/isUpperCase current)
-      (str/join [current (filter-capital-letters remaining)])
+      (string/join [current (filter-capital-letters remaining)])
       (filter-capital-letters remaining))
     ""))
 
@@ -596,7 +596,7 @@
 ;;     ignored.
 (defn split-sort-words [s]
   (sort
-   #(compare (str/lower-case %1) (str/lower-case %2))
+   #(compare (string/lower-case %1) (string/lower-case %2))
    (re-seq #"\w+" s)))
 
 (comment (split-sort-words "Have a nice day."))
@@ -658,7 +658,7 @@
 ;;     returns a new comma separated string that only contains the numbers which
 ;;     are perfect squares.
 (defn perfect-squares [s]
-  (str/join
+  (string/join
    ","
    (reduce
     (fn [perfect-squares num]
@@ -707,7 +707,7 @@
    (vals
     (reduce
      (fn [anagrams current]
-       (let [key (str/join (sort current))]
+       (let [key (string/join (sort current))]
          (if (contains? anagrams key)
            (update anagrams key conj current)
            (assoc anagrams key #{current}))))
