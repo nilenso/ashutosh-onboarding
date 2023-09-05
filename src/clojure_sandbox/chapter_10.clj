@@ -45,6 +45,7 @@
   [mover (some #(good-move? % enemy-pos)
                (shuffle (king-moves mpos)))])
 
+(reset-board!)
 (take 5 (repeatedly #(choose-move @to-move)))
 
 (defn place [from to] to)
@@ -66,8 +67,7 @@
 (board-map deref board)
 
 (def thread-pool
-  (Executors/newFixedThreadPool
-   (+ 2 (.availableProcessors (Runtime/getRuntime)))))
+  (Executors/newFixedThreadPool 4))
 
 (defn dothreads! [f & {thread-count :threads
                        exec-count :times :or {thread-count 1 exec-count 1}}]
