@@ -857,15 +857,15 @@
 ;; 85. Write a function which generates the power set of a given set. The power
 ;;     set of a set x is the set of all subsets of x, including the empty set
 ;;     and x itself.
-(defn- back-track [x current i]
-  (into
-   #{current}
-   (for [j (range i (count x))] (back-track x (conj current (nth x j)) j))))
-
-(defn power-set [x]
-  (if (empty? x)
-    #{x}
-    (back-track (seq x) #{} 0)))
+(defn power-set [xs]
+  (->> xs
+       (reduce (fn [res x]
+                 (->> res
+                      (map #(apply hash-set x %))
+                      (cons #{x})
+                      (into res)))
+               #{})
+       (into #{#{}})))
 
 (comment (power-set #{1 :a}))
 (comment (power-set #{}))
