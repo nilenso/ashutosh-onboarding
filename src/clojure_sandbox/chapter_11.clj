@@ -11,7 +11,7 @@
   (->> (xml/parse url)
        (zip/xml-zip)))
 
-(feed->zipper "https://ashutoshgngwr.github.io/feed.xml")
+(comment (feed->zipper "https://ashutoshgngwr.github.io/feed.xml"))
 
 (defn normalize [feed]
   (if (= :feed (:tag (first feed)))
@@ -32,7 +32,7 @@
        (zip/children)
        (filter (comp #{:item :entry} :tag))))
 
-(feed-children "https://ashutoshgngwr.github.io/feed.xml")
+(comment (feed-children "https://ashutoshgngwr.github.io/feed.xml"))
 
 (defn count-text-task [extractor txt feed]
   (let [items (feed-children feed)
@@ -42,15 +42,16 @@
          (mapcat #(re-seq re %))
          count)))
 
-(count-text-task title "android" "https://ashutoshgngwr.github.io/feed.xml")
+(comment (count-text-task title "android" "https://ashutoshgngwr.github.io/feed.xml"))
 
-(def feeds #{"http://feeds.feedburner.com/ElixirLang"
-             "http://blog.fogus.me/feed/"})
+(comment
+  (def feeds #{"http://feeds.feedburner.com/ElixirLang"
+               "http://blog.fogus.me/feed/"})
 
-(let [results (for [feed feeds]
-                (future
-                  (count-text-task title "Elixir" feed)))]
-  (reduce + (map deref results)))
+  (let [results (for [feed feeds]
+                  (future
+                    (count-text-task title "Elixir" feed)))]
+    (reduce + (map deref results))))
 
 
 (defmacro as-futures [[a args] & body]
@@ -67,7 +68,7 @@
               =>
               (reduce + (map deref results))))
 
-(apply (partial occurrences title "Elixir") feeds)
+(comment (apply (partial occurrences title "Elixir") feeds))
 
 
 (def thread-pool

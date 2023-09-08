@@ -102,7 +102,7 @@
 (comment (gui.DynaFrame. "test"))
 
 (comment (meta (gui.DynaFrame. "3rd")))
-(gui.DynaFrame/version)
+(comment (gui.DynaFrame/version))
 
 (comment (def gui (gui.DynaFrame. "4th")))
 (comment
@@ -304,7 +304,7 @@ sary
   (slice [this s e])
   (sliceCount [this]))
 
-(extend user.ISliceable
+(extend ISliceable
   Sliceable
   {:slice (fn [this s e] (.slice this s e))
    :sliceCount (fn [this] (.sliceCount this))})
