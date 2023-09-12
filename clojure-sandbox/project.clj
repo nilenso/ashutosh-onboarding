@@ -5,7 +5,8 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [clj-fuzzy "0.4.1"]
-                 [criterium "0.4.6"]]
+                 [criterium "0.4.6"]
+                 [org.clojure/core.logic "1.0.1"]]
   :main ^:skip-aot clojure-sandbox.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
