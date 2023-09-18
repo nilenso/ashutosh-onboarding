@@ -17,6 +17,10 @@
        (apply concat)))
 
 (defn -main [& _]
-  (->> "output/fhir"
-       (fhir-bundle-entries)
-       (fhir/patients)))
+  (let [locations (->> "output/fhir"
+                       (fhir-bundle-entries)
+                       (fhir/filter-entries "Location")
+                       (vec))]
+    (->> "output/fhir"
+         (fhir-bundle-entries)
+         (fhir/encounter-duration-avg-by-city locations))))
