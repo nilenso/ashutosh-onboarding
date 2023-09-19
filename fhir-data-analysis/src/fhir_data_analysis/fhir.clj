@@ -1,5 +1,6 @@
 (ns fhir-data-analysis.fhir
   (:require [cheshire.core :as json]
+            [fhir-data-analysis.utils :as utils]
             [java-time.api :as jt])
   (:import [java.time Duration]))
 
@@ -16,18 +17,6 @@
   "Filters the given `entries` by the value of their `resourceType` attribute."
   [resourceType entries]
   (filter #(= resourceType (get % :resourceType)) entries))
-
-(defn- map-transformer
-  [transformations]
-  (fn transform [entry]
-    (reduce
-     (fn reducer [transformed [k [entry-ks tfn :as v]]]
-       (cond
-         (map? v) (assoc transformed k (reduce reducer (get transformed k) v))
-         (vector? entry-ks) (assoc transformed k (tfn (get-in entry entry-ks)))
-         :else (assoc transformed k (tfn (get entry entry-ks)))))
-     {}
-     transformations)))
 
 (defn- period->duration [period]
   (Duration/between
@@ -49,16 +38,16 @@
 (defn encounter-duration-avg [entries]
   (->> entries
        (filter-entries "Encounter")
-       (map (map-transformer {:duration [:period period->duration]}))
+       (map (utils/transformer {:duration [:period period->duration]}))
        (map #(get % :duration))
        (average-duration)
        (duration->string)))
 
-(defn subject-encounter-duration-avg [entries]
+(defn encounter-duration-avg-by-subject [entries]
   (->> entries
        (filter-entries "Encounter")
-       (map (map-transformer {:subject-ref [[:subject :reference] identity]
-                              :duration [:period period->duration]}))
+       (map (utils/transformer {:subject-ref [:subject :reference]
+                                :duration [:period period->duration]}))
        (group-by #(get % :subject-ref))
        (reduce-kv #(assoc %1 %2 (->> %3
                                      (map :duration)
@@ -70,11 +59,10 @@
   (->> entries
        (filter-entries "Encounter")
        (map
-        (map-transformer
+        (utils/transformer
          {:locations [:location
                          ;; transformation fn to inline location references
-                      (fn [locations]
-                        (map #(get-in % [:location :reference]) locations))]
+                      (partial map #(get-in % [:location :reference]))]
           :duration [:period period->duration]}))
        (reduce
         (fn [location-durations encounter]
@@ -105,8 +93,8 @@
 
 (defn- location-city-mapping [locations]
   (->> locations
-       (map (map-transformer {:ref [:identifier synthea-location-ref]
-                              :city [[:address :city] identity]}))
+       (map (utils/transformer {:ref [:identifier synthea-location-ref]
+                                :city [:address :city]}))
        (reduce #(assoc %1 (get %2 :ref) (get %2 :city)) {})))
 
 (defn encounter-duration-avg-by-city [locations entries]
@@ -124,3 +112,33 @@
                                        (average-duration)
                                        (duration->string)))
                     {}))))
+
+(defn subject-encounter-duration-avg-by-organization [entries]
+  (->> entries
+       (filter-entries "Encounter")
+       (map (utils/transformer {:subject-ref [:subject :reference]
+                                :organization-ref [:serviceProvider :reference]
+                                :duration [:period period->duration]}))
+       (reduce
+        (fn [grouped encounter]
+          (let [sref (get encounter :subject-ref)
+                oref (get encounter :organization-ref)
+                dur (get encounter :duration)
+                omap (get grouped sref {})]
+            (if (not (contains? grouped sref))
+              (assoc grouped sref {oref [dur]})
+              (assoc grouped sref (if (contains? omap oref)
+                                    (update omap oref conj dur)
+                                    (assoc omap oref [dur]))))))
+        {})
+       (reduce-kv
+        (fn [averages sref org-encounters]
+          (assoc averages
+                 sref
+                 (reduce-kv #(->> %3
+                                  (average-duration)
+                                  (duration->string)
+                                  (assoc %1 %2))
+                            {}
+                            org-encounters)))
+        {})))
