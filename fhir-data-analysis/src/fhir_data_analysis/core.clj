@@ -23,4 +23,7 @@
                        (vec))]
     (->> "output/fhir"
          (fhir-bundle-entries)
-         (fhir/count-patients :may))))
+         (fhir/patient-distribution (fhir/patient-age-classifier {:0-25 [0 25]
+                                                                  :26-50 [26 50]
+                                                                  :51-75 [51 75]
+                                                                  :76-100 [76 100]})))))

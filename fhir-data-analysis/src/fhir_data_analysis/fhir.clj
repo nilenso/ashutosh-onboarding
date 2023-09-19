@@ -100,7 +100,7 @@
     (->> entries
          (encounter-durations-by-location)
          (reduce-kv (fn [city-durations location durations]
-                      (let [city (get location-cities location :unkown-city)]
+                      (let [city (get location-cities location :unknown-city)]
                         (if (contains? city-durations city)
                           (update city-durations city into durations)
                           (assoc city-durations city durations))))
@@ -167,3 +167,24 @@
        (filter #(= (get % :month) (jt/month month)))
        (reduce #(conj %1 (get %2 :subject-ref)) #{})
        (count)))
+
+(defn patient-distribution [group-fn entries]
+  (->> entries
+       (filter-entries "Patient")
+       (group-by group-fn)
+       (reduce-kv #(assoc %1 %2 (count %3)) {})))
+
+(defn patient-age-classifier [age-groups]
+  (let [cy (.getValue (jt/year))]
+    (fn [p]
+      (let [age (-> p
+                    (get :birthDate)
+                    (jt/local-date)
+                    (.getYear)
+                    (#(- cy %)))]
+        (reduce-kv (fn [assigned group [start end]]
+                     (if (and (<= start age) (<= age end))
+                       group
+                       assigned))
+                   :unknown
+                   age-groups)))))
