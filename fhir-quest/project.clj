@@ -5,4 +5,7 @@
   :main ^:skip-aot fhir-quest.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
-                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
+                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}
+  :clean-targets [:target-path "synthea"]
+  :plugins [[lein-shell "0.5.0"]]
+  :aliases {"gen-fhir-data" ["do" "shell" "./scripts/gen-fhir-data.sh" "synthea"]})

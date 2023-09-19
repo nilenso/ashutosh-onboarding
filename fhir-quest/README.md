@@ -36,3 +36,27 @@ entire pipeline into codependent stages.
 
 2. **UI Server**: This stage runs a web server and uses the persistent store
    from stage one to render various graphs on user demand.
+
+## Developer Quick Start
+
+### Prerequisites
+
+1. [A JDK](https://openjdk.org/)
+2. [Clojure](https://clojure.org/guides/install_clojure)
+3. [Leiningen](https://codeberg.org/leiningen/leiningen)
+
+### Generating FHIR data
+
+Run the `gen-fhir-data` Lein task to run a [script](scripts/gen-fhir-data.sh)
+that fetches the latest Synthea Jar and runs it for you with sensible options.
+
+```console
+lein gen-fhir-data
+```
+
+You can also specify/override [Synthea
+args](https://github.com/synthetichealth/synthea/wiki/Basic-Setup-and-Running).
+
+```console
+lein gen-fhir-data -p 10000 -a 0-25
+```
