@@ -23,4 +23,4 @@
                        (vec))]
     (->> "output/fhir"
          (fhir-bundle-entries)
-         (fhir/encounter-duration-avg-by-city locations))))
+         (fhir/count-patients :may))))
