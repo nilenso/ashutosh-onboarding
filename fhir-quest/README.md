@@ -34,8 +34,9 @@ entire pipeline into codependent stages.
 1. **Data Processor**: This stage reads the given dataset, performs a set of
    queries and stores their results in a persistent store.
 
-2. **UI Server**: This stage runs a web server and uses the persistent store
-   from stage one to render various graphs on user demand.
+2. **UI and Data Server**: This stage runs a web server and uses the persistent
+   store from stage one to serve the aggregated data and an UI to render various
+   graphs on user demand.
 
 ## Developer Quick Start
 

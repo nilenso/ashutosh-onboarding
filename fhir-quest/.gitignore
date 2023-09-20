@@ -2,3 +2,4 @@
 .lsp/
 target/
 synthea/
+fhir-quest.db
