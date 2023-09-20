@@ -2,7 +2,9 @@
   :description "Simple analysis queries on (generated) medical data conforming to FHIR R4 data specifications."
   :url "https://github.com/nilenso/ashutosh-onboarding/blob/main/fhir-quest"
   :dependencies [[org.clojure/clojure "1.11.1"]
-                 [cli-matic "0.5.4"]]
+                 [cli-matic "0.5.4"]
+                 [org.xerial/sqlite-jdbc "3.43.0.0"]
+                 [org.flywaydb/flyway-core "9.22.1"]]
   :main ^:skip-aot fhir-quest.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
