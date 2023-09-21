@@ -1,20 +1,23 @@
 (ns fhir-quest.core
   (:require [cli-matic.core :as cm]
+            [fhir-quest.cmd :as cmd]
             [fhir-quest.db :as db]))
 
-(defn- sqlite-dsn [db-name]
-  (str "jdbc:sqlite:" db-name))
-
-(defn- init [args]
-  (db/migrate! (sqlite-dsn (get args :sqlite-db))))
+(defn- init! [args]
+  (-> args
+      (get :sqlite-db)
+      (db/sqlite-dsn)
+      (db/migrate!))
+  nil)
 
 (defn- with-init [f]
   (fn [args]
-    (init args)
+    (init! args)
     (f args)))
 
-(defn ingest-cmd [args]
-  (prn args))
+(defn ingest [args]
+  (cmd/ingest (db/spec (get args :sqlite-db))
+              (get args :data-dir)))
 
 (defn -main [& args]
   (cm/run-cmd args {:app {:command "fhir-quest"
@@ -32,4 +35,4 @@
                                         :as "File path for a directory containing FHIR JSON bundles."
                                         :type :string
                                         :default "synthea/fhir"}]
-                                :runs (with-init ingest-cmd)}]}))
+                                :runs (with-init ingest)}]}))
