@@ -2,12 +2,53 @@
   (:require [clojure.java.jdbc :as jdbc]
             [fhir-quest.fhir :as fhir]))
 
+(defn- encounter-duration-avg []
+  (fn [db-conn e]
+    (let [[old-data] (jdbc/query db-conn
+                                 "SELECT * FROM encounter_duration_avg LIMIT 1")
+          old-avg (get old-data :duration_ms 0)
+          old-count (get old-data :encounter_count 0)
+          new-duration (fhir/encounter-duration-ms e)
+          new-count (inc old-count)
+          new-avg (-> old-avg
+                      (* old-count)
+                      (+ new-duration)
+                      (/ new-count)
+                      (int))]
+      (jdbc/execute! db-conn
+                     ["INSERT OR REPLACE INTO encounter_duration_avg VALUES (?, ?, ?)"
+                      0
+                      new-avg
+                      new-count]))))
+
+(defn- encounter-duration-avg-by-subject []
+  (fn [db-conn e]
+    (let [subject-id (fhir/encounter-subject-id e)
+
+          [old-data] (jdbc/query db-conn
+                                 ["SELECT * FROM subject_encounter_duration_avg WHERE subject_id = ? LIMIT 1"
+                                  subject-id])
+          old-avg (get old-data :duration_ms 0)
+          old-count (get old-data :encounter_count 0)
+          new-duration (fhir/encounter-duration-ms e)
+          new-count (inc old-count)
+          new-avg (-> old-avg
+                      (* old-count)
+                      (+ new-duration)
+                      (/ new-count)
+                      (int))]
+      (jdbc/execute! db-conn
+                     ["INSERT OR REPLACE INTO subject_encounter_duration_avg VALUES (?, ?, ?)"
+                      subject-id
+                      new-avg
+                      new-count]))))
+
 (defn- patient-age-group []
   (let [age-classifier (fhir/patient-age-classifier {:infant [0 1]
                                                      :child [2 12]
                                                      :adolescent [13 17]
                                                      :adult [18 64]
-                                                     :older-adult [65 100]})]
+                                                     :older-adult [65 ##Inf]})]
     (fn [db-conn p]
       (jdbc/execute! db-conn
                      ["INSERT OR REPLACE INTO patient_age_group VALUES (?, ?)"
@@ -32,7 +73,9 @@
                       (fhir/id p)
                       (extractor p)]))))
 
-(def ^:private ingesters {"Patient" (juxt (patient-age-group)
+(def ^:private ingesters {"Encounter" (juxt (encounter-duration-avg)
+                                            (encounter-duration-avg-by-subject))
+                          "Patient" (juxt (patient-age-group)
                                           (patient-language)
                                           (patient-marital-status))})
 

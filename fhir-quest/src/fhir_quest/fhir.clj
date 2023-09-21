@@ -1,7 +1,8 @@
 (ns fhir-quest.fhir
   (:require [cheshire.core :as json]
             [clojure.java.io :as io]
-            [java-time.api :as jt]))
+            [java-time.api :as jt])
+  (:import java.time.Duration))
 
 (defn read-bundle
   "JSON-parses a FHIR Bundle from file `f` and returns a lazy collection of its
@@ -34,6 +35,14 @@
   [e]
   (get e :id))
 
+(defn- classify [groups default-group value]
+  (reduce-kv (fn [assigned group [start end]]
+               (if (and (<= start value) (<= value end))
+                 group
+                 assigned))
+             default-group
+             groups))
+
 (defn patient-age-classifier
   "Returns a closure on the given `age-groups` that accepts a patient resource
    and returns a corresponding age-group for the given patient resource. Both
@@ -46,17 +55,11 @@
   [age-groups]
   (let [cy (.getValue (jt/year))]
     (fn [p]
-      (let [age (-> p
-                    (get :birthDate)
-                    (jt/local-date)
-                    (.getYear)
-                    (#(- cy %)))]
-        (reduce-kv (fn [assigned group [start end]]
-                     (if (and (<= start age) (<= age end))
-                       group
-                       assigned))
-                   :unknown
-                   age-groups)))))
+      (->> (get p :birthDate)
+           (jt/local-date)
+           (.getYear)
+           (- cy)
+           (classify age-groups :unkown)))))
 
 (defn- find-code [system codeable-concept]
   (->> (get codeable-concept :coding)
@@ -91,3 +94,19 @@
   (fn [p]
     (->> (get p :maritalStatus)
          (find-code system))))
+
+(defn- period->duration [period]
+  (Duration/between
+   (jt/offset-date-time (get period :start))
+   (jt/offset-date-time (get period :end))))
+
+(defn encounter-subject-id [e]
+  (-> e
+      (get-in [:subject :reference])
+      (.replace "urn:uuid:" "")))
+
+(defn encounter-duration-ms [e]
+  (-> e
+      (get :period)
+      (period->duration)
+      (.toMillis)))

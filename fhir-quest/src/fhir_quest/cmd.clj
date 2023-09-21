@@ -8,6 +8,6 @@
    need a `clojure.java.jdbc` compliant databse specification `db-spec` to
    persist proccessed data."
   [db-spec input-dir]
-  (jdbc/with-db-connection [db-conn db-spec]
+  (jdbc/with-db-transaction [db-conn db-spec]
     (doseq [entry (fhir/read-bundles input-dir)]
       (ingester/ingest! db-conn entry))))
