@@ -34,13 +34,13 @@
   [e]
   (get e :id))
 
-(defn patient-by-age-classifier
-  "Returns a closure on the given `age-groups` that accepts a db spec and an
-   entry and returns a corresponding age-group. Both bounds of the age range in
-   `age-groups` are inclusive.
+(defn patient-age-classifier
+  "Returns a closure on the given `age-groups` that accepts a patient resource
+   and returns a corresponding age-group for the given patient resource. Both
+   bounds of the age range in `age-groups` are inclusive.
 
-       ((age-classifier {:first [0 10]
-                         :second [11 20]}) db-spec fhir-entry)
+       ((patient-age-classifier {:first [0 10]
+                                 :second [11 20]}) fhir-resource)
        ;=> :first
    "
   [age-groups]
@@ -57,3 +57,37 @@
                        assigned))
                    :unknown
                    age-groups)))))
+
+(defn- find-code [system codeable-concept]
+  (->> (get codeable-concept :coding)
+       (filter #(= system (get % :system)))
+       (first)
+       (#(get % :code))))
+
+(defn patient-language-extractor
+  "Returns a closure on the given coding `system` that accepts a patient
+   resource and returns the communication language code corresponding to the
+   given coding system for the given patient resource.
+
+       ((patient-language-extractor \"urn:ietf:bcp:47\") fhir-resource)
+   "
+  [system]
+  (fn [p]
+    (->> (get p :communication)
+         (filter #(not= :not-found (get % :language)))
+         (first)
+         (#(get % :language))
+         (find-code system))))
+
+(defn patient-marital-status-extractor
+  "Returns a closure on the given coding `system` that accepts a patient
+   resource and returns the marital status code corresponding to the given
+   coding system for the given patient resource.
+
+       ((patient-marital-status-extractor
+         \"http://terminology.hl7.org/CodeSystem/v3-MaritalStatus\") fhir-resource)
+   "
+  [system]
+  (fn [p]
+    (->> (get p :maritalStatus)
+         (find-code system))))
