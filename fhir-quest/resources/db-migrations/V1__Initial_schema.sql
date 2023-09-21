@@ -1,6 +1,6 @@
-CREATE TABLE patient_age_group (
+CREATE TABLE patient_age (
   patient_id TEXT NOT NULL PRIMARY KEY,
-  age_group TEXT NOT NULL
+  age INTEGER NOT NULL
 );
 
 CREATE TABLE patient_language (

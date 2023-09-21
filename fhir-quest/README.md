@@ -61,3 +61,13 @@ args](https://github.com/synthetichealth/synthea/wiki/Basic-Setup-and-Running).
 ```console
 lein gen-fhir-data -p 10000 -a 0-25
 ```
+
+### Processing FHIR data
+
+Run the `ingest` app subcommand to process data and export its aggregates to
+a SQLite database.
+
+```console
+lein run -- ingest
+lein run -- -db ./fhir-quest.db ingest -d ./synthea/fhir
+```

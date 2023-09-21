@@ -26,7 +26,7 @@
                                    :short "db"
                                    :as "File path for an SQLite database for storing and accessing aggregates."
                                    :type :string
-                                   :default "fhir-quest.db"}]
+                                   :default "./fhir-quest.db"}]
                     :commands [{:command "ingest"
                                 :short "i"
                                 :description ["Process the given dataset and persist its aggregates."]
@@ -34,5 +34,5 @@
                                         :short "d"
                                         :as "File path for a directory containing FHIR JSON bundles."
                                         :type :string
-                                        :default "synthea/fhir"}]
+                                        :default "./synthea/fhir"}]
                                 :runs (with-init ingest)}]}))
