@@ -46,7 +46,7 @@ entire pipeline into codependent stages.
 2. [Clojure](https://clojure.org/guides/install_clojure)
 3. [Leiningen](https://codeberg.org/leiningen/leiningen)
 
-### Generating FHIR data
+### Generating FHIR Data
 
 Run the `gen-fhir-data` Lein task to run a [script](scripts/gen-fhir-data.sh)
 that fetches the latest Synthea Jar and runs it for you with sensible options.
@@ -62,7 +62,7 @@ args](https://github.com/synthetichealth/synthea/wiki/Basic-Setup-and-Running).
 lein gen-fhir-data -p 10000 -a 0-25
 ```
 
-### Processing FHIR data
+### Processing FHIR Data
 
 Run the `ingest` app subcommand to process data and export its aggregates to
 a SQLite database.
@@ -71,3 +71,49 @@ a SQLite database.
 lein run -- ingest
 lein run -- -db ./fhir-quest.db ingest -d ./synthea/fhir
 ```
+
+### Serving UI and Data
+
+Run the `serve` app subcommand to start the HTTP server for serving UI and data.
+
+```console
+lein run -- serve
+lein run -- -db ./fhir-quest.db serve -p 8080
+```
+
+#### REST API
+
+- `GET /api/v1/query`
+
+  Lists all available queries (aggregations).
+
+  Sample Response:
+
+  ```jsonc
+  [
+    {
+      "id": "encounter-duration-avg",
+      "description": "Encounter duration average"
+    }
+    // ...
+  ]
+  ```
+
+- `GET /api/v1/query/<query-id>/chart`
+
+  Retrieves chart data for a query with the given `query-id`.
+
+  Sample Response:
+
+  ```jsonc
+  {
+    "type": "histogram",
+    "data": [
+      { "label": "Very Short", "value": 440 },
+      { "label": "Short", "value": 326 },
+      { "label": "Medium", "value": 97 },
+      { "label": "Long", "value": 96 },
+      { "label": "Very Long", "value": 150 }
+    ]
+  }
+  ```

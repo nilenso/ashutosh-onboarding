@@ -39,7 +39,12 @@
          (into request)
          (next-handler))))
 
-(defn start-server [db-spec port & {join-thread :join-thread
-                                    :or {join-thread false}}]
+(defn start-server
+  "Starts a Jetty server on the given `port` and passes the given `db-spec` to
+   request handlers with request parameters. If `:join-thread` is specified,
+   joins the current thread with server's connection listen thread. The default
+   is `false`."
+  [db-spec port & {join-thread :join-thread
+                   :or {join-thread false}}]
   (jetty/run-jetty (wrap-db-spec db-spec #'routes)
                    {:port port :join? join-thread}))

@@ -66,7 +66,10 @@
                       FROM patient GROUP BY marital_status")
        (update-query-data db-conn "patient-marital-status")))
 
-(defn aggregate! [db-conn]
+(defn aggregate!
+  "Runs aggregators on the ingested data and updates chart data for all queries
+   in the database with updated aggregations."
+  [db-conn]
   (doto db-conn
     (aggregate-encounter-duration-avg!)
     (aggregate-patient-encounter-duration-groups!)
