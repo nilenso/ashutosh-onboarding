@@ -1,5 +1,6 @@
 (ns fhir-quest.cmd
   (:require [clojure.java.jdbc :as jdbc]
+            [fhir-quest.aggregator :as aggregator]
             [fhir-quest.fhir :as fhir]
             [fhir-quest.ingester :as ingester]))
 
@@ -10,4 +11,5 @@
   [db-spec input-dir]
   (jdbc/with-db-transaction [db-conn db-spec]
     (doseq [entry (fhir/read-bundles input-dir)]
-      (ingester/ingest-fhir-resource! db-conn entry))))
+      (ingester/ingest-fhir-resource! db-conn entry))
+    (aggregator/aggregate! db-conn)))
