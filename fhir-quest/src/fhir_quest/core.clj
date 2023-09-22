@@ -19,6 +19,11 @@
                 input-dir :data-dir}]
   (cmd/ingest (db/spec db-path) input-dir))
 
+(defn- serve [{db-path :sqlite-db
+               http-port :port}]
+  (cmd/serve (db/spec db-path)
+             http-port))
+
 (defn -main [& args]
   (cm/run-cmd args {:app {:command "fhir-quest"
                           :description "Simple analysis queries on (generated) medical data conforming to FHIR R4 data specifications."}
@@ -35,4 +40,13 @@
                                         :as "File path for a directory containing FHIR JSON bundles."
                                         :type :string
                                         :default "./synthea/fhir"}]
-                                :runs (wrap-init ingest)}]}))
+                                :runs (wrap-init ingest)}
+                               {:command "serve"
+                                :short "s"
+                                :description ["Serve HTTP server for UI and data."]
+                                :opts [{:option "port"
+                                        :short "p"
+                                        :as "Listen port for incoming HTTP connections."
+                                        :type :int
+                                        :default 8080}]
+                                :runs (wrap-init serve)}]}))

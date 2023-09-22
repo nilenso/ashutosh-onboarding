@@ -2,6 +2,7 @@
   (:require [clojure.java.jdbc :as jdbc]
             [fhir-quest.aggregator :as aggregator]
             [fhir-quest.fhir :as fhir]
+            [fhir-quest.http :as http]
             [fhir-quest.ingester :as ingester]))
 
 (defn ingest
@@ -13,3 +14,6 @@
     (doseq [entry (fhir/read-bundles input-dir)]
       (ingester/ingest-fhir-resource! db-conn entry))
     (aggregator/aggregate! db-conn)))
+
+(defn serve [db-spec port]
+  (http/start-server db-spec port :join-thread true))
