@@ -18,10 +18,5 @@
       (jt/local-date)
       (#(.between ChronoUnit/MONTHS % (jt/local-date)))))
 
-(defn count-unique [items]
-  (reduce (fn [counts item]
-            (if (contains? counts item)
-              (update counts item inc)
-              (assoc counts item 1)))
-          {}
-          items))
+(defn freq-counting [frequencies item]
+  (assoc frequencies item (inc (get frequencies item 0))))

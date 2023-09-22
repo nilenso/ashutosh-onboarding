@@ -34,7 +34,11 @@
                                "Long" [14401000 28800000]
                                "Very Long" [28801000 ##Inf]}
                               "Unknown"))
-       (utils/count-unique)
+       (reduce utils/freq-counting {"Very Short" 0
+                                    "Short" 0
+                                    "Medium" 0
+                                    "Long" 0
+                                    "Very Long" 0}) ; init for preserving key order
        (map (fn [[k v]] {:label k :value v}))
        (update-query-data db-conn "patient-encounter-duration-groups")))
 
@@ -50,20 +54,25 @@
                                "Adults" [205 780]
                                "Older Adults" [781 ##Inf]}
                               "Unknown"))
-       (utils/count-unique)
+       (reduce utils/freq-counting {"Neonates" 0
+                                    "Infants" 0
+                                    "Children" 0
+                                    "Adolescents" 0
+                                    "Adults" 0
+                                    "Older Adults" 0}) ; init for preserving key order
        (map (fn [[k v]] {:label k :value v}))
        (update-query-data db-conn "patient-age-group")))
 
 (defn- aggregate-patient-language-groups! [db-conn]
   (->> (jdbc/query db-conn
                    "SELECT language as label, COUNT(id) AS count
-                      FROM patient GROUP BY language")
+                      FROM patient GROUP BY language ORDER BY language")
        (update-query-data db-conn "patient-language")))
 
 (defn- aggregate-patient-marital-status-groups! [db-conn]
   (->> (jdbc/query db-conn
                    "SELECT marital_status as label, COUNT(id) AS count
-                      FROM patient GROUP BY marital_status")
+                      FROM patient GROUP BY marital_status ORDER BY marital_status")
        (update-query-data db-conn "patient-marital-status")))
 
 (defn aggregate!
