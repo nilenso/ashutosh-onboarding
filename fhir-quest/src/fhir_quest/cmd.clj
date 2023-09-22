@@ -10,4 +10,4 @@
   [db-spec input-dir]
   (jdbc/with-db-transaction [db-conn db-spec]
     (doseq [entry (fhir/read-bundles input-dir)]
-      (ingester/ingest! db-conn entry))))
+      (ingester/ingest-fhir-resource! db-conn entry))))

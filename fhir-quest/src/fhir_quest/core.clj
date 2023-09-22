@@ -10,14 +10,14 @@
       (db/migrate!))
   nil)
 
-(defn- with-init [f]
+(defn- wrap-init [f]
   (fn [args]
     (init! args)
     (f args)))
 
-(defn ingest [args]
-  (cmd/ingest (db/spec (get args :sqlite-db))
-              (get args :data-dir)))
+(defn- ingest [{db-path :sqlite-db
+                input-dir :data-dir}]
+  (cmd/ingest (db/spec db-path) input-dir))
 
 (defn -main [& args]
   (cm/run-cmd args {:app {:command "fhir-quest"
@@ -35,4 +35,4 @@
                                         :as "File path for a directory containing FHIR JSON bundles."
                                         :type :string
                                         :default "./synthea/fhir"}]
-                                :runs (with-init ingest)}]}))
+                                :runs (wrap-init ingest)}]}))

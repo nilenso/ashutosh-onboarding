@@ -2,8 +2,7 @@
   (:require [cheshire.core :as json]
             [clojure.java.io :as io]
             [java-time.api :as jt])
-  (:import java.time.Duration)
-  (:import java.time.temporal.ChronoUnit))
+  (:import java.time.Duration))
 
 (defn read-bundle
   "JSON-parses a FHIR Bundle from file `f` and returns a lazy collection of its
@@ -62,13 +61,10 @@
       (period->duration)
       (.toMillis)))
 
-(defn patient-age
-  "Returns the age of the given patient resource based on their `birthYear` and
-   current date."
+(defn patient-birth-date
+  "Returns the birth date of the given patient resource."
   [p]
-  (->> (get p :birthDate)
-       (jt/local-date)
-       (#(.between ChronoUnit/YEARS % (jt/local-date)))))
+  (get p :birthDate))
 
 (defn patient-language
   "Returns the communication language code corresponding to the given coding
