@@ -65,13 +65,13 @@
 
 (defn- aggregate-patient-language-groups! [db-conn]
   (->> (jdbc/query db-conn
-                   "SELECT language as label, COUNT(id) AS count
+                   "SELECT language as label, COUNT(id) AS value
                       FROM patient GROUP BY language ORDER BY language")
        (update-query-data db-conn "patient-language")))
 
 (defn- aggregate-patient-marital-status-groups! [db-conn]
   (->> (jdbc/query db-conn
-                   "SELECT marital_status as label, COUNT(id) AS count
+                   "SELECT marital_status as label, COUNT(id) AS value
                       FROM patient GROUP BY marital_status ORDER BY marital_status")
        (update-query-data db-conn "patient-marital-status")))
 

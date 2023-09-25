@@ -22,7 +22,7 @@ INSERT INTO
   query (id, description, chart_type)
   VALUES
     ("encounter-duration-avg", "Encounter duration average", "scalar"),
-    ("patient-encounter-duration-groups", "Distribution of patients by their average encounter durations", "histogram"),
-    ("patient-age-group", "Distribution of patients by age groups", "histogram"),
-    ("patient-language", "Distribution of patients by communication languages", "histogram"),
-    ("patient-marital-status", "Distribution of patients by marital status", "histogram");
+    ("patient-encounter-duration-groups", "Distribution of patients by their average encounter durations", "bar"),
+    ("patient-age-group", "Distribution of patients by age groups", "pie"),
+    ("patient-language", "Distribution of patients by communication languages", "pie"),
+    ("patient-marital-status", "Distribution of patients by marital status", "pie");
