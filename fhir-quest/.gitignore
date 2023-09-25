@@ -2,4 +2,5 @@
 .lsp/
 target/
 synthea/
-fhir-quest.db
+fhir-quest.db*
+resources/public/js

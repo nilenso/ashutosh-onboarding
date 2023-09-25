@@ -11,10 +11,12 @@
                  [org.xerial/sqlite-jdbc "3.43.0.0"]
                  [ring/ring-core "1.10.0"]
                  [ring/ring-jetty-adapter "1.10.0"]]
+  :source-paths ["src/cli"]
   :main ^:skip-aot fhir-quest.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
-                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}
+                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
+             :web-ui {:prep-tasks [["do" "shell" "npx" "shadow-cljs" "compile" "app"]]}}
   :clean-targets [:target-path "synthea"]
   :plugins [[lein-shell "0.5.0"]]
   :aliases {"gen-fhir-data" ["do" "shell" "./scripts/gen-fhir-data.sh" "synthea"]})

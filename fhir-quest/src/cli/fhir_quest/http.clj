@@ -2,7 +2,7 @@
   (:require [cheshire.core :as json]
             [clojure.java.jdbc :as jdbc]
             [compojure.core :refer [defroutes GET]]
-            [compojure.route :refer [not-found]]
+            [compojure.route :refer [not-found, resources]]
             [ring.adapter.jetty :as jetty]
             [ring.util.response :as r]))
 
@@ -29,6 +29,8 @@
 (defroutes routes
   (GET "/api/v1/query" _ list-queries)
   (GET "/api/v1/query/:id/chart" _ get-query)
+  (GET "/" _ (r/resource-response "index.html" {:root "public"}))
+  (resources "/")
   (not-found (-> "Page not found"
                  (r/response)
                  (r/status 404))))

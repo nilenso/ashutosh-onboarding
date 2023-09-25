@@ -77,8 +77,19 @@ lein run -- -db ./fhir-quest.db ingest -d ./synthea/fhir
 Run the `serve` app subcommand to start the HTTP server for serving UI and data.
 
 ```console
+lein with-profile +web-ui run -- serve
+lein with-profile +web-ui run -- -db ./fhir-quest.db serve -p 8080
+```
+
+#### Web UI
+
+The `web-ui` Lein profile adds a `prep-task` to compile the UI once and serve it
+using the app. To enable live reload for the UI, run a Shadow CLJS watch
+alongwith `serve` app subcommand without the `web-ui` profile.
+
+```console
+npx shadow-cljs watch app
 lein run -- serve
-lein run -- -db ./fhir-quest.db serve -p 8080
 ```
 
 #### REST API
