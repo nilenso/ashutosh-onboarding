@@ -1,8 +1,9 @@
 (ns fhir-quest.core
-  (:require [reagent.dom :as dom]))
+  (:require [fhir-quest.pages :as pages]
+            [reagent.dom :as dom]))
 
 (defn mount-root []
-  (dom/render [:p "Hello, world!"] (.getElementById js/document "app")))
+  (dom/render [pages/home] (.getElementById js/document "app")))
 
 (defn ^:export init! []
   (mount-root))

@@ -1,5 +1,6 @@
 {:source-paths ["src/wui"]
  :dependencies [[binaryage/devtools "1.0.7"]
+                [cljs-ajax "0.7.5"]
                 [nrepl "1.0.0"]
                 [reagent "1.2.0"]]
  :builds       {:app {:target     :browser
