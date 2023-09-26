@@ -1,5 +1,6 @@
 (ns fhir-quest.components
-  (:require ["recharts" :refer [Bar BarChart Legend Pie PieChart XAxis YAxis]]))
+  (:require ["recharts" :refer [Bar BarChart Legend Pie PieChart XAxis YAxis]]
+            [reagent.core :as r]))
 
 (defn spinner []
   [:div
@@ -18,14 +19,26 @@
       :fill "currentFill"}]]
    [:span {:class "sr-only"} "Loading..."]])
 
+(defn danger-alert []
+  (into [:div
+         {:class
+          ["flex flex-row items-center gap-4"
+           "px-8 py-4 mb-6"
+           "rounded-lg bg-red-50"
+           "text-sm text-red-800"],
+          :role "alert"}
+         [:span {:class "font-medium text-3xl"} "⚠️ "]]
+        (r/children (r/current-component))))
+
 (defn scalar-chart [data]
   (when (not= 1 (count data))
     (throw (js/Error. "scalar chart requires a single data point")))
   [:div {:class ["flex flex-col items-center gap-2"
                  "border border-gray-200 rounded-md"
                  "p-6"]}
-   [:h2 {:class "text-lg md:text-xl"} (get-in data [0 "label"])]
-   [:p {:class "text-2xl md:text-3xl"} (get-in data [0 "value"])]])
+   [:h2 {:class "text-lg md:text-xl text-gray-500"} (get-in data [0 :label])]
+   [:p {:class "text-2xl md:text-3xl"
+        :style {:color "#8884d8"}} (get-in data [0 :value])]])
 
 (defn bar-chart [data]
   [:> BarChart {:data data :width 512 :height 512}

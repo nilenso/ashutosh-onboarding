@@ -10,7 +10,7 @@
   [f]
   (with-open [r (io/reader f)]
     (->> r
-         (#(json/parse-stream % keyword))
+         (#(json/parse-stream % true))
          (#(get % :entry []))
          (map #(get % :resource)))))
 
