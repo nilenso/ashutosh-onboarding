@@ -101,9 +101,9 @@ lein run -- serve
 
 #### REST API
 
-- `GET /api/v1/query`
+- `GET /api/v1/aggregation`
 
-  Lists all available queries (aggregations).
+  Lists all available aggregations.
 
   Sample Response:
 
@@ -117,15 +117,15 @@ lein run -- serve
   ]
   ```
 
-- `GET /api/v1/query/<query-id>/chart`
+- `GET /api/v1/aggregation/<agg-id>/chart`
 
-  Retrieves chart data for a query with the given `query-id`.
+  Retrieves chart data for a aggregation with the given `agg-id`.
 
   Sample Response:
 
   ```jsonc
   {
-    "type": "histogram",
+    "type": "bar",
     "data": [
       { "label": "Very Short", "value": 440 },
       { "label": "Short", "value": 326 },

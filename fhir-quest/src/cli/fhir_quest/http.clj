@@ -6,17 +6,17 @@
             [ring.adapter.jetty :as jetty]
             [ring.util.response :as r]))
 
-(defn- list-queries [{db-spec :db-spec}]
-  (-> (jdbc/query db-spec "SELECT id, description FROM query")
+(defn- list-aggregations [{db-spec :db-spec}]
+  (-> (jdbc/query db-spec "SELECT id, description FROM aggregation")
       (json/encode)
       (r/response)
       (r/header "Content-Type" "application/json")))
 
-(defn- get-query [{db-spec :db-spec
+(defn- get-aggregation-chart [{db-spec :db-spec
                    {id :id} :params}]
   (-> (jdbc/query db-spec
                   ["SELECT chart_type AS type, data_json
-                      FROM query WHERE id = ? LIMIT 1"
+                      FROM aggregation WHERE id = ? LIMIT 1"
                    id])
       (first)
       (#(do {:type (get % :type)
@@ -27,8 +27,8 @@
       (r/header "Content-Type" "application/json")))
 
 (defroutes routes
-  (GET "/api/v1/query" _ list-queries)
-  (GET "/api/v1/query/:id/chart" _ get-query)
+  (GET "/api/v1/aggregation" _ list-aggregations)
+  (GET "/api/v1/aggregation/:id/chart" _ get-aggregation-chart)
   (GET "/" _ (r/resource-response "index.html" {:root "public"}))
   (resources "/")
   (not-found (-> "Page not found"

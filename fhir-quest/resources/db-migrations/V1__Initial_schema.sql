@@ -11,7 +11,7 @@ CREATE TABLE encounter (
   duration_ms INTEGER NOT NULL
 );
 
-CREATE TABLE query (
+CREATE TABLE aggregation (
   id TEXT NOT NULL PRIMARY KEY,
   description TEXT NOT NULL,
   chart_type TEXT NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE query (
 );
 
 INSERT INTO
-  query (id, description, chart_type)
+  aggregation (id, description, chart_type)
   VALUES
     ("encounter-duration-avg", "Encounter duration average", "scalar"),
     ("patient-encounter-duration-groups", "Distribution of patients by their average encounter durations", "bar"),

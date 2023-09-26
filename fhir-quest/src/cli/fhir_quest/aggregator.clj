@@ -3,11 +3,11 @@
             [clojure.java.jdbc :as jdbc]
             [fhir-quest.utils :as utils]))
 
-(defn- update-query-data [db-conn query-id data]
+(defn- update-agg-data [db-conn agg-id data]
   (jdbc/execute! db-conn
-                 ["UPDATE query SET data_json = ? WHERE id = ?"
+                 ["UPDATE aggregation SET data_json = ? WHERE id = ?"
                   (json/encode-smile data)
-                  query-id]))
+                  agg-id]))
 
 (defn- aggregate-encounter-duration-avg! [db-conn]
   (let [avg-duration-ms (-> db-conn
@@ -16,10 +16,10 @@
                             (first)
                             (get :avg_duration_ms)
                             (Math/round))]
-    (update-query-data db-conn
-                       "encounter-duration-avg"
-                       [{:label "Average (ms)"
-                         :value avg-duration-ms}])))
+    (update-agg-data db-conn
+                     "encounter-duration-avg"
+                     [{:label "Average (ms)"
+                       :value avg-duration-ms}])))
 
 (defn- aggregate-patient-encounter-duration-groups! [db-conn]
   (->> (jdbc/query db-conn
@@ -40,7 +40,7 @@
                                     "Long" 0
                                     "Very Long" 0}) ; init for preserving key order
        (map (fn [[k v]] {:label k :value v}))
-       (update-query-data db-conn "patient-encounter-duration-groups")))
+       (update-agg-data db-conn "patient-encounter-duration-groups")))
 
 (defn- aggregate-patient-age-groups! [db-conn]
   (->> (jdbc/query db-conn
@@ -61,19 +61,19 @@
                                     "Adults" 0
                                     "Older Adults" 0}) ; init for preserving key order
        (map (fn [[k v]] {:label k :value v}))
-       (update-query-data db-conn "patient-age-group")))
+       (update-agg-data db-conn "patient-age-group")))
 
 (defn- aggregate-patient-language-groups! [db-conn]
   (->> (jdbc/query db-conn
                    "SELECT language as label, COUNT(id) AS value
                       FROM patient GROUP BY language ORDER BY language")
-       (update-query-data db-conn "patient-language")))
+       (update-agg-data db-conn "patient-language")))
 
 (defn- aggregate-patient-marital-status-groups! [db-conn]
   (->> (jdbc/query db-conn
                    "SELECT marital_status as label, COUNT(id) AS value
                       FROM patient GROUP BY marital_status ORDER BY marital_status")
-       (update-query-data db-conn "patient-marital-status")))
+       (update-agg-data db-conn "patient-marital-status")))
 
 (defn aggregate!
   "Runs aggregators on the ingested data and updates chart data for all queries
