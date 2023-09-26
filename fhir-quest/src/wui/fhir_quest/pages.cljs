@@ -91,7 +91,7 @@
         error (rf/subscribe [::query-chart-error])
         loading (rf/subscribe [::query-chart-loading])]
     (fn []
-      [:div {:class ["self-center"]}
+      [:div {:class ["max-w-xl w-full mx-auto"]}
        (cond
          @loading [components/spinner]
          @error [components/danger-alert
@@ -107,7 +107,7 @@
 
 (defn home []
   (rf/dispatch [::fetch-queries])
-  [:div {:class ["flex" "flex-col gap-8 md:gap-12"
+  [:div {:class ["flex" "flex-col gap-12 md:gap-16"
                  "w-full max-w-4xl"
                  "mx-auto p-8 md:p-12"]}
    [:h1 {:class ["text-3xl md:text-4xl"]} "FHIR Quest"]
