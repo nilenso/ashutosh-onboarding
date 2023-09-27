@@ -1,7 +1,8 @@
 (ns fhir-quest.aggregator
   (:require [cheshire.core :as json]
             [clojure.java.jdbc :as jdbc]
-            [fhir-quest.utils :as utils]))
+            [fhir-quest.utils :as utils])
+  (:import java.util.concurrent.TimeUnit))
 
 (defn- update-agg-data [db-conn agg-id data]
   (jdbc/execute! db-conn
@@ -18,8 +19,8 @@
                             (Math/round))]
     (update-agg-data db-conn
                      "encounter-duration-avg"
-                     [{:label "Average (ms)"
-                       :value avg-duration-ms}])))
+                     [{:label "Average (minutes)"
+                       :value (.toMinutes TimeUnit/MILLISECONDS avg-duration-ms)}])))
 
 (defn- aggregate-patient-encounter-duration-groups! [db-conn]
   (->> (jdbc/query db-conn
@@ -28,17 +29,17 @@
                    {:row-fn #(-> %
                                  (get :avg_duration_ms)
                                  (Math/round))})
-       (map (utils/classifier {"Very Short" [0 1800000]
-                               "Short" [1801000 7200000]
-                               "Medium" [7201000 14400000]
-                               "Long" [14401000 28800000]
-                               "Very Long" [28801000 ##Inf]}
+       (map (utils/classifier {"< 30 mins" [0 1800000]
+                               "0.5-2 hours" [1800001 7200000]
+                               "2-4 hours" [7200001 14400000]
+                               "4-8 hours" [14400001 28800000]
+                               "> 8 hours" [28800001 ##Inf]}
                               "Unknown"))
-       (reduce utils/freq-counting {"Very Short" 0
-                                    "Short" 0
-                                    "Medium" 0
-                                    "Long" 0
-                                    "Very Long" 0}) ; init for preserving key order
+       (reduce utils/freq-counting {"< 30 mins" 0
+                                    "0.5-2 hours" 0
+                                    "2-4 hours" 0
+                                    "4-8 hours" 0
+                                    "> 8 hours" 0}) ; init for preserving key order
        (map (fn [[k v]] {:label k :value v}))
        (update-agg-data db-conn "patient-encounter-duration-groups")))
 
@@ -73,6 +74,12 @@
   (->> (jdbc/query db-conn
                    "SELECT marital_status as label, COUNT(id) AS value
                       FROM patient GROUP BY marital_status ORDER BY marital_status")
+       (map #(do {:label (case (get % :label)
+                           "D" "Divorced"
+                           "M" "Married"
+                           "S" "Single"
+                           "W" "Windowed")
+                  :value (get % :value)}))
        (update-agg-data db-conn "patient-marital-status")))
 
 (defn aggregate!
