@@ -36,7 +36,7 @@
                                          "8:Unknown"))
        (into (sorted-map))
        (map (fn [[k v]]
-              {:label (last (string/split k #":"))
+              {:label (last (string/split k #":" 2))
                :value v}))
        (repo/update-aggregation-data db-conn "patient-encounter-duration-groups")))
 
@@ -53,7 +53,7 @@
                                          "6:Unknown"))
        (into (sorted-map))
        (map (fn [[k v]]
-              {:label (last (string/split k #":"))
+              {:label (last (string/split k #":" 2))
                :value v}))
        (repo/update-aggregation-data db-conn "patient-age-group")))
 

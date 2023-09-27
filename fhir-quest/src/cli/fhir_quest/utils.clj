@@ -2,7 +2,7 @@
   (:require [java-time.api :as jt])
   (:import java.time.temporal.ChronoUnit))
 
-(defn classify [groups default-group value]
+(defn- classify [groups default-group value]
   (reduce (fn [assigned [group [start end]]]
             (if (and (<= start value) (<= value end))
               group
