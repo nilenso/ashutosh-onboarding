@@ -4,13 +4,12 @@
             [fhir-quest.subs]
             [re-frame.core :as rf]))
 
-(defn- aggregation-selector [selection-handler-fn]
+(defn- aggregation-selector [_]
   (let [queries (rf/subscribe [:fhir-quest.subs/agg-selector-items])
         error (rf/subscribe [:fhir-quest.subs/agg-selector-error])
         loading (rf/subscribe [:fhir-quest.subs/agg-selector-loading])]
     (fn [selection-handler-fn]
-      [:div {:class ["self-center"
-                     "flex flex-col md:flex-row items-center gap-4"]}
+      [:div {:class "self-center flex flex-col md:flex-row items-center gap-4"}
        (cond
          @loading [components/spinner]
          @error [components/danger-alert
@@ -41,12 +40,12 @@
         error (rf/subscribe [:fhir-quest.subs/agg-chart-error])
         loading (rf/subscribe [:fhir-quest.subs/agg-chart-loading])]
     (fn []
-      [:div {:class ["w-full flex flex-row justify-center"]}
+      [:div {:class "w-full flex flex-row justify-center"}
        (cond
          @loading [components/spinner]
          @error [components/danger-alert
                  "Failed to load chart data for this aggregation. Please try again!"]
-         @type [:div {:class ["max-w-xl w-full"]}
+         @type [:div {:class "max-w-xl w-full"}
                 [(get chart-components @type) @data]])])))
 
 (defn home []
@@ -54,6 +53,6 @@
   [:div {:class ["flex" "flex-col gap-12 md:gap-16"
                  "w-full max-w-4xl"
                  "mx-auto p-8 md:p-12"]}
-   [:h1 {:class ["text-3xl md:text-4xl"]} "FHIR Quest"]
+   [:h1 {:class "text-3xl md:text-4xl"} "FHIR Quest"]
    [aggregation-selector #(rf/dispatch [:fhir-quest.events/selected-agg-id %])]
    [aggregation-chart]])

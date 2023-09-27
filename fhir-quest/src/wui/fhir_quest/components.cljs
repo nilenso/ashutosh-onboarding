@@ -48,7 +48,7 @@
            "rounded-lg bg-red-50"
            "text-sm text-red-800"],
           :role "alert"}
-         [:span {:class "font-medium text-3xl"} "⚠️ "]]
+         [:span {:class "font-medium text-3xl"} "⚠️"]]
         (r/children (r/current-component))))
 
 (defn scalar-chart [data]
