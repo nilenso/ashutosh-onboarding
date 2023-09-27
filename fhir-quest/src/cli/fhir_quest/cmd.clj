@@ -7,7 +7,7 @@
 
 (defn ingest
   "Runs ingesters on FHIR resources present in directory `input-dir`. Ingesters
-   need a `clojure.java.jdbc` compliant databse specification `db-spec` to
+   need a `clojure.java.jdbc` compliant database specification `db-spec` to
    persist proccessed data."
   [db-spec input-dir]
   (jdbc/with-db-transaction [db-conn db-spec]

@@ -33,3 +33,22 @@
 
 (defn list-patients [db-conn]
   (jdbc/query db-conn "SELECT * FROM patient"))
+
+(defn save-encounter! [db-conn id subject-id duration-ms]
+  (jdbc/execute! db-conn
+                 ["INSERT OR REPLACE INTO
+                          encounter (id, subject_id, duration_ms)
+                          VALUES (?, ?, ?)"
+                  id
+                  subject-id
+                  duration-ms]))
+
+(defn save-patient! [db-conn id birth-date language marital-status]
+  (jdbc/execute! db-conn
+                 ["INSERT OR REPLACE INTO
+                        patient (id, birth_date, language, marital_status)
+                        VALUES (?, ?, ?, ?)"
+                  id
+                  birth-date
+                  language
+                  marital-status]))
