@@ -1,27 +1,22 @@
 (ns fhir-quest.http
   (:require [cheshire.core :as json]
-            [clojure.java.jdbc :as jdbc]
             [compojure.core :refer [defroutes GET]]
-            [compojure.route :refer [not-found, resources]]
+            [compojure.route :refer [not-found resources]]
+            [fhir-quest.service :as svc]
             [ring.adapter.jetty :as jetty]
             [ring.util.response :as r]))
 
 (defn- list-aggregations [{db-spec :db-spec}]
-  (-> (jdbc/query db-spec "SELECT id, description FROM aggregation")
+  (-> db-spec
+      (svc/list-aggregations)
       (json/encode)
       (r/response)
       (r/header "Content-Type" "application/json")))
 
 (defn- get-aggregation-chart [{db-spec :db-spec
-                   {id :id} :params}]
-  (-> (jdbc/query db-spec
-                  ["SELECT chart_type AS type, data_json
-                      FROM aggregation WHERE id = ? LIMIT 1"
-                   id])
-      (first)
-      (#(do {:type (get % :type)
-             :data (-> (get % :data_json)
-                       (json/parse-smile))}))
+                               {id :id} :params}]
+  (-> db-spec
+      (svc/get-aggregation-chart id)
       (json/encode)
       (r/response)
       (r/header "Content-Type" "application/json")))
