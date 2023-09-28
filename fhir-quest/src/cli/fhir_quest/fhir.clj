@@ -4,15 +4,15 @@
             [java-time.api :as jt])
   (:import java.time.Duration))
 
-(defn read-bundle
+(defn- read-bundle
   "JSON-parses a FHIR Bundle from file `f` and returns a lazy collection of its
    entries."
   [f]
   (with-open [r (io/reader f)]
-    (->> r
-         (#(json/parse-stream % true))
-         (#(get % :entry []))
-         (map #(get % :resource)))))
+    (-> r
+        (json/parse-stream true)
+        (get :entry [])
+        ((partial map #(get % :resource))))))
 
 (defn read-bundles
   "JSON-parses FHIR Bundles using JSON files in directory `die` and returns a
@@ -31,10 +31,11 @@
        (first)
        (#(get % :code))))
 
-(defn- period->duration [period]
-  (Duration/between
-   (jt/offset-date-time (get period :start))
-   (jt/offset-date-time (get period :end))))
+(defn- period->duration [{:keys [start end]}]
+  (when (and start end)
+    (Duration/between
+     (jt/offset-date-time start)
+     (jt/offset-date-time end))))
 
 (defn resource-type
   "Returns the `resourceType` of a FHIR resource."
@@ -49,17 +50,17 @@
 (defn encounter-subject-id
   "Returns the id of the subject for the given encounter resource."
   [e]
-  (-> e
-      (get-in [:subject :reference])
-      (.replace "urn:uuid:" "")))
+  (some-> e
+          (get-in [:subject :reference])
+          (.replace "urn:uuid:" "")))
 
 (defn encounter-duration-ms
   "Returns the duration in milliseconds in the encounter resource."
   [e]
-  (-> e
-      (get :period)
-      (period->duration)
-      (.toMillis)))
+  (some-> e
+          (get :period)
+          (period->duration)
+          (.toMillis)))
 
 (defn patient-birth-date
   "Returns the birth date of the given patient resource."
