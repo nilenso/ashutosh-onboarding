@@ -26,35 +26,30 @@
   (testing "with custom grouping function"
     (is (= {:a 2
             :A 3}
-           (utils/count-by #(get % :group)
+           (utils/count-by :group
                            [{:group :a}
                             {:group :A}
                             {:group :A}
                             {:group :a}
                             {:group :A}])))))
 
-(defn- date-before [months]
-  (-> (jt/local-date)
-      (.minusMonths months)))
-
-(defn- date-after [months]
-  (-> (jt/local-date)
-      (.plusMonths months)))
-
 (deftest months-since-test
-  (testing "with dates before n months"
-    (is (= 1 (utils/months-since (date-before 1))))
-    (is (= 3 (utils/months-since (date-before 3))))
-    (is (= 6 (utils/months-since (date-before 6))))
-    (is (= 9 (utils/months-since (date-before 9))))
-    (is (= 12 (utils/months-since (date-before 12)))))
+  (jt/with-clock (jt/mock-clock (jt/instant "2000-01-01T00:00:00+05:30"))
+    (testing "with dates before n months"
+      (doseq [[date months-since] {"1999-12-01" 1
+                                   "1999-10-01" 3
+                                   "1999-07-01" 6
+                                   "1999-04-01" 9
+                                   "1999-01-01" 12}]
+        (is (= months-since (utils/months-since date)))))
 
-  (testing "with date after n months"
-    (is (= -1 (utils/months-since (date-after 1))))
-    (is (= -3 (utils/months-since (date-after 3))))
-    (is (= -6 (utils/months-since (date-after 6))))
-    (is (= -9 (utils/months-since (date-after 9))))
-    (is (= -12 (utils/months-since (date-after 12))))))
+    (testing "with date after n months"
+      (doseq [[date months-since] {"2000-02-01" -1
+                                   "2000-04-01" -3
+                                   "2000-07-01" -6
+                                   "2000-10-01" -9
+                                   "2001-01-01" -12}]
+        (is (= months-since (utils/months-since date)))))))
 
 (deftest average-test
   (testing "with no quantities"

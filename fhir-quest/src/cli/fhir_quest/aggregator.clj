@@ -11,10 +11,10 @@
              (reduce #(conj %1 (get %2 :duration_ms)) [])
              (utils/average)
              (.toMinutes TimeUnit/MILLISECONDS))]
-    (repo/update-aggregation-data db-conn
-                                  "encounter-duration-avg"
-                                  [{:label "Average (minutes)"
-                                    :value avg-duration-mins}])))
+    (repo/update-aggregation-data! db-conn
+                                   "encounter-duration-avg"
+                                   [{:label "Average (minutes)"
+                                     :value avg-duration-mins}])))
 
 (defn- aggregate-patient-encounter-duration-groups! [db-conn]
   (->> db-conn
@@ -38,7 +38,7 @@
        (map (fn [[k v]]
               {:label (last (string/split k #":" 2))
                :value v}))
-       (repo/update-aggregation-data db-conn "patient-encounter-duration-groups")))
+       (repo/update-aggregation-data! db-conn "patient-encounter-duration-groups")))
 
 (defn- aggregate-patient-age-groups! [db-conn]
   (->> db-conn
@@ -55,14 +55,14 @@
        (map (fn [[k v]]
               {:label (last (string/split k #":" 2))
                :value v}))
-       (repo/update-aggregation-data db-conn "patient-age-group")))
+       (repo/update-aggregation-data! db-conn "patient-age-group")))
 
 (defn- aggregate-patient-language-groups! [db-conn]
   (->> db-conn
        (repo/list-patients)
        (utils/count-by #(get % :language))
        (map (fn [[k v]] {:label k :value v}))
-       (repo/update-aggregation-data db-conn "patient-language")))
+       (repo/update-aggregation-data! db-conn "patient-language")))
 
 (defn- aggregate-patient-marital-status-groups! [db-conn]
   (->> db-conn
@@ -75,7 +75,7 @@
                         "S" "Single"
                         "W" "Windowed")
                :value v}))
-       (repo/update-aggregation-data db-conn "patient-marital-status")))
+       (repo/update-aggregation-data! db-conn "patient-marital-status")))
 
 (defn aggregate!
   "Runs aggregators on the ingested data and updates chart data for all queries

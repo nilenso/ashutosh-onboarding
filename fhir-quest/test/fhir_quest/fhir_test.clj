@@ -4,7 +4,7 @@
             [clojure.test :refer [deftest is testing]]
             [fhir-quest.factory :as factory]
             [fhir-quest.fhir :as fhir]
-            [fhir-quest.fixtures :as fixtures]))
+            [fhir-quest.fixture :as fixture]))
 
 (defn- gen-fhir-bundle-json [resources]
   (json/generate-string {:resourceType "Bundle"
@@ -12,10 +12,10 @@
 
 (deftest read-bundles-test
   (testing "with empty directory"
-    (fixtures/with-tmp-dir #(is (= '() (fhir/read-bundles %)))))
+    (fixture/with-tmp-dir #(is (= '() (fhir/read-bundles %)))))
 
   (testing "with non-empty directory"
-    (fixtures/with-tmp-dir
+    (fixture/with-tmp-dir
       (fn [tmp-dir]
         (spit (io/file tmp-dir "1.json") (gen-fhir-bundle-json (range 5)))
         (spit (io/file tmp-dir "2.not-json") "abcd")

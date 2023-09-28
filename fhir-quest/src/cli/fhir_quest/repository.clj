@@ -22,7 +22,7 @@
         {:row-fn aggregation--dao->domain})
        (first)))
 
-(defn update-aggregation-data [db-conn agg-id data]
+(defn update-aggregation-data! [db-conn agg-id data]
   (jdbc/execute! db-conn
                  ["UPDATE aggregation SET data_json = ? WHERE id = ?"
                   (json/encode-smile data)
