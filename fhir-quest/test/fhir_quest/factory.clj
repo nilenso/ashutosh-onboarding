@@ -31,6 +31,9 @@
 (defn- rand-marital-status []
   (rand-nth ["D" "M" "S" "W"]))
 
+(defn- rand-label []
+  (str "Data " (rand-int 99)))
+
 (defn encounter
   ([] (encounter {}))
   ([values]
@@ -44,7 +47,7 @@
 (defn encounter-dbo []
   {:id (str (random-uuid))
    :subject_id (str (random-uuid))
-   :duration_ms (rand-int 999999999)})
+   :duration_ms (rand-int 999999)})
 
 (defn patient
   ([] (patient {}))
@@ -70,6 +73,17 @@
    (deep-merge {:id (str (random-uuid))
                 :description "test-description"
                 :chart_type "test-chart-type"
-                :data_json (json/generate-smile [{:label "test-label"
-                                                  :value (rand-int 9999999)}])}
+                :data_json (-> (rand-int 5)
+                               (repeatedly #(do {:label (rand-label)
+                                                 :value (rand-int 99)}))
+                               (json/generate-smile))}
                values)))
+
+(defn aggregation []
+  {:id (str (random-uuid))
+   :description "test-description"
+   :chart_type "test-chart-type"
+   :data (-> (rand-int 5)
+             (repeatedly #(do {:label (rand-label)
+                               :value (rand-int 99)}))
+             (vec))})

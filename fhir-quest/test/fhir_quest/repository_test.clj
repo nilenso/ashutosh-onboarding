@@ -4,8 +4,7 @@
             [clojure.test :refer [deftest is testing]]
             [fhir-quest.factory :as factory]
             [fhir-quest.fixture :as fixture]
-            [fhir-quest.repository :as repo]
-            [fhir-quest.db :as db]))
+            [fhir-quest.repository :as repo]))
 
 (defn- assert-aggregation-dbo-equals-domain-obj [dbo domain]
   (is (= (get dbo :id) (get domain :id)))

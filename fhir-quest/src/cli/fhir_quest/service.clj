@@ -7,6 +7,6 @@
       ((partial map #(select-keys % [:id :description])))))
 
 (defn get-aggregation-chart [db-conn agg-id]
-  (let [{:keys [chart_type data]} (repo/get-aggregation db-conn agg-id)]
+  (when-let [{:keys [chart_type data]} (repo/get-aggregation db-conn agg-id)]
     {:type chart_type
      :data data}))
