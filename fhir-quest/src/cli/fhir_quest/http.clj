@@ -9,17 +9,19 @@
 (defn- list-aggregations [{db-spec :db-spec}]
   (-> db-spec
       (svc/list-aggregations)
+      (or [])
       (json/encode)
       (r/response)
       (r/header "Content-Type" "application/json")))
 
 (defn- get-aggregation-chart [{db-spec :db-spec
                                {id :id} :params}]
-  (-> db-spec
-      (svc/get-aggregation-chart id)
-      (json/encode)
-      (r/response)
-      (r/header "Content-Type" "application/json")))
+  (if-let [chart-data (svc/get-aggregation-chart db-spec id)]
+    (-> chart-data
+        (json/encode)
+        (r/response)
+        (r/header "Content-Type" "application/json"))
+    (r/status 404)))
 
 (defroutes routes
   (GET "/api/v1/aggregation" _ list-aggregations)
@@ -30,7 +32,7 @@
                  (r/response)
                  (r/status 404))))
 
-(defn- wrap-db-spec [db-spec next-handler]
+(defn wrap-db-spec [db-spec next-handler]
   (fn [request]
     (->> {:db-spec db-spec}
          (into request)

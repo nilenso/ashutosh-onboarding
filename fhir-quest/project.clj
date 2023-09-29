@@ -14,9 +14,11 @@
   :source-paths ["src/cli"]
   :main ^:skip-aot fhir-quest.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all
+  :profiles {:test {:dependencies [[ring/ring-mock "0.4.0"]]}
+             :uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
              :web-ui {:prep-tasks [["do" "shell" "npx" "shadow-cljs" "compile" "app"]]}}
   :clean-targets [:target-path "synthea"]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-cloverage "1.2.2"]
+            [lein-shell "0.5.0"]]
   :aliases {"gen-fhir-data" ["do" "shell" "./scripts/gen-fhir-data.sh" "synthea"]})
