@@ -1,5 +1,6 @@
 (ns fhir-quest.factory
-  (:require [cheshire.core :as json]))
+  (:require [cheshire.core :as json]
+            [java-time.api :as jt]))
 
 (defn- deep-merge [& maps]
   (reduce
@@ -40,8 +41,8 @@
    (deep-merge {:resourceType "Encounter"
                 :id (str (random-uuid))
                 :subject {:reference (str "urn:uuid:" (random-uuid))}
-                :period {:start "2023-09-28T00:00:00+05:30"
-                         :end "2023-09-28T00:05:00+05:30"}}
+                :period {:start "2000-01-01T00:00:00+05:30"
+                         :end   "2000-01-01T00:05:00+05:30"}}
                values)))
 
 (defn encounter-dbo []
@@ -90,3 +91,15 @@
                                             :value (rand-int 99)}))
                           (vec))}
                values)))
+
+(defn fhir-patient-bundle [count age marital_status lang-code]
+  (let [now (jt/local-date)]
+    {:resourceType "Bundle"
+     :entry (->> count
+                 (#(repeatedly % (partial patient {:birthDate (str (.minusYears now age))
+                                                   :communication [{:language {:coding [{:system "urn:ietf:bcp:47"
+                                                                                         :code lang-code}]}}]
+                                                   :maritalStatus {:coding [{:system "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus"
+                                                                             :code marital_status}]}})))
+                 (map #(do {:resource %}))
+                 (vec))}))

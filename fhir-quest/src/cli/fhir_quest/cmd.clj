@@ -5,7 +5,7 @@
             [fhir-quest.http :as http]
             [fhir-quest.ingester :as ingester]))
 
-(defn ingest
+(defn ingest!
   "Runs ingesters on FHIR resources present in directory `input-dir`. Ingesters
    need a `clojure.java.jdbc` compliant database specification `db-spec` to
    persist proccessed data."
@@ -15,5 +15,5 @@
       (ingester/ingest-fhir-resource! db-conn entry))
     (aggregator/aggregate! db-conn)))
 
-(defn serve [db-spec port]
+(defn serve! [db-spec port]
   (http/start-server db-spec port :join-thread true))

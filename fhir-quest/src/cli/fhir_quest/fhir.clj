@@ -18,12 +18,12 @@
   "JSON-parses FHIR Bundles using JSON files in directory `die` and returns a
    lazy collection of their entries."
   [dir]
-  (->> dir
-       (io/file)
-       (file-seq)
-       (filter #(.endsWith (.getName ^java.io.File %) ".json"))
-       (pmap read-bundle)
-       (apply concat)))
+  (some->> dir
+           (io/file)
+           (file-seq)
+           (filter #(.endsWith (.getName ^java.io.File %) ".json"))
+           (pmap read-bundle)
+           (apply concat)))
 
 (defn- find-code [system codeable-concept]
   (->> (get codeable-concept :coding)

@@ -69,7 +69,7 @@ a SQLite database.
 
 ```console
 lein run -- ingest
-lein run -- -db ./fhir-quest.db ingest -d ./synthea/fhir
+lein run -- -d ./fhir-quest.db ingest -i ./synthea/fhir
 ```
 
 ### Serving UI and Data
@@ -86,7 +86,7 @@ lein run -- -db ./fhir-quest.db ingest -d ./synthea/fhir
 
   ```console
   lein with-profile +web-ui run -- serve
-  lein with-profile +web-ui run -- -db ./fhir-quest.db serve -p 8080
+  lein with-profile +web-ui run -- -d ./fhir-quest.db serve -p 8080
   ```
 
 #### Live Reload for the UI
