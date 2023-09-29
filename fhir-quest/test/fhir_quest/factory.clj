@@ -79,11 +79,14 @@
                                (json/generate-smile))}
                values)))
 
-(defn aggregation []
-  {:id (str (random-uuid))
-   :description "test-description"
-   :chart_type "test-chart-type"
-   :data (-> (rand-int 5)
-             (repeatedly #(do {:label (rand-label)
-                               :value (rand-int 99)}))
-             (vec))})
+(defn aggregation
+  ([] (aggregation {}))
+  ([values]
+   (deep-merge {:id (str (random-uuid))
+                :description "test-description"
+                :chart_type "test-chart-type"
+                :data (-> (rand-int 5)
+                          (repeatedly #(do {:label (rand-label)
+                                            :value (rand-int 99)}))
+                          (vec))}
+               values)))

@@ -22,8 +22,14 @@
     (with-redefs [repo/get-aggregation (constantly nil)]
       (is (nil? (svc/get-aggregation-chart nil "test-agg-id")))))
 
-  (testing "with some data in the repository"
-    (let [want (factory/aggregation)]
+  (testing "with missing chart data in the repository"
+    (with-redefs [repo/get-aggregation (-> {:id "test-agg-id" :data nil}
+                                           (factory/aggregation)
+                                           (constantly))]
+      (is (nil? (svc/get-aggregation-chart nil "test-agg-id")))))
+
+  (testing "with complete chart data in the repository"
+    (let [want (factory/aggregation {:id "test-agg-id"})]
       (with-redefs [repo/get-aggregation (constantly want)]
         (let [got (svc/get-aggregation-chart nil "test-agg-id")]
           (is (= (get want :chart_type) (get got :type)))
