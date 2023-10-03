@@ -1,6 +1,5 @@
 (ns fhir-quest.factory
-  (:require [cheshire.core :as json]
-            [java-time.api :as jt]))
+  (:require [cheshire.core :as json]))
 
 (defn- deep-merge [& maps]
   (reduce
@@ -92,14 +91,24 @@
                           (vec))}
                values)))
 
-(defn fhir-patient-bundle [count age marital_status lang-code]
-  (let [now (jt/local-date)]
-    {:resourceType "Bundle"
-     :entry (->> count
-                 (#(repeatedly % (partial patient {:birthDate (str (.minusYears now age))
-                                                   :communication [{:language {:coding [{:system "urn:ietf:bcp:47"
-                                                                                         :code lang-code}]}}]
-                                                   :maritalStatus {:coding [{:system "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus"
-                                                                             :code marital_status}]}})))
-                 (map #(do {:resource %}))
-                 (vec))}))
+(defn fhir-patient-bundle [count birth-date marital-status lang-code]
+  {:resourceType "Bundle"
+   :entry (->> {:birthDate birth-date
+                :communication [{:language {:coding [{:system "urn:ietf:bcp:47"
+                                                      :code lang-code}]}}]
+                :maritalStatus {:coding [{:system "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus"
+                                          :code marital-status}]}}
+               (partial patient)
+               (repeatedly count)
+               (map #(do {:resource %}))
+               (vec))})
+
+(defn fhir-encounter-bundle [count patient-id period-start period-end]
+  {:resourceType "Bundle"
+   :entry (->> {:subject {:reference (str "urn:uuid:" patient-id)}
+                :period {:start period-start
+                         :end period-end}}
+               (partial encounter)
+               (repeatedly count)
+               (map #(do {:resource %}))
+               (vec))})
