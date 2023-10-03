@@ -16,4 +16,6 @@
     (aggregator/aggregate! db-conn)))
 
 (defn serve! [db-spec port]
-  (http/start-server db-spec port :join-thread true))
+  (try
+    (http/start-server db-spec port :join-thread true)
+    (catch InterruptedException _))) ;; ignore

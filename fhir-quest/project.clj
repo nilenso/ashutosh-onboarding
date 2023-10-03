@@ -14,7 +14,8 @@
   :source-paths ["src/cli"]
   :main ^:skip-aot fhir-quest.core
   :target-path "target/%s"
-  :profiles {:test {:dependencies [[ring/ring-mock "0.4.0"]]}
+  :profiles {:test {:dependencies [[clj-http "3.12.3"]
+                                   [ring/ring-mock "0.4.0"]]}
              :uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
              :web-ui {:prep-tasks [["do" "shell" "npx" "shadow-cljs" "compile" "app"]]}}

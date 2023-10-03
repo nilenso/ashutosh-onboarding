@@ -8,6 +8,6 @@
 
 (defn get-aggregation-chart [db-conn agg-id]
   (let [{:keys [chart_type data]} (repo/get-aggregation db-conn agg-id)]
-    (when (and chart_type data)
+    (when (and chart_type (seq data))
       {:type chart_type
        :data data})))

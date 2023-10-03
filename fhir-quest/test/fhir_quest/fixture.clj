@@ -1,7 +1,7 @@
 (ns fhir-quest.fixture
   (:require [clojure.java.io :as io]
-            [fhir-quest.db :as db]
-            [clojure.java.jdbc :as jdbc]))
+            [clojure.java.jdbc :as jdbc]
+            [fhir-quest.db :as db]))
 
 (defn with-tmp-dir [f]
   (let [tmp-dir (-> "java.io.tmpdir"
