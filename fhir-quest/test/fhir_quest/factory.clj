@@ -16,8 +16,8 @@
 (defn- rand-date []
   (String/format "%04d-%02d-%02d"
                  (into-array [(+ 1950 (rand-int 75))
-                              (+ 1 (rand-int 12))
-                              (+ 1 (rand-int 28))])))
+                              (inc (rand-int 12))
+                              (inc (rand-int 28))])))
 
 (defn- rand-language []
   (rand-nth ["bn-IN"
@@ -44,10 +44,13 @@
                          :end   "2000-01-01T00:05:00+05:30"}}
                values)))
 
-(defn encounter-dbo []
-  {:id (str (random-uuid))
-   :subject_id (str (random-uuid))
-   :duration_ms (rand-int 999999)})
+(defn encounter-dbo
+  ([] (encounter-dbo {}))
+  ([values]
+   (deep-merge {:id (str (random-uuid))
+                :subject_id (str (random-uuid))
+                :duration_ms (rand-int 999999)}
+               values)))
 
 (defn patient
   ([] (patient {}))
@@ -61,11 +64,14 @@
                                           :code (rand-marital-status)}]}}
                values)))
 
-(defn patient-dbo []
-  {:id (str (random-uuid))
-   :birth_date (rand-date)
-   :language (rand-language)
-   :marital_status (rand-marital-status)})
+(defn patient-dbo
+  ([] (patient-dbo {}))
+  ([values]
+   (deep-merge {:id (str (random-uuid))
+                :birth_date (rand-date)
+                :language (rand-language)
+                :marital_status (rand-marital-status)}
+               values)))
 
 (defn aggregation-dbo
   ([] (aggregation-dbo {}))
@@ -74,6 +80,7 @@
                 :description "test-description"
                 :chart_type "test-chart-type"
                 :data_json (-> (rand-int 5)
+                               (inc)
                                (repeatedly #(do {:label (rand-label)
                                                  :value (rand-int 99)}))
                                (json/generate-smile))}
@@ -86,6 +93,7 @@
                 :description "test-description"
                 :chart_type "test-chart-type"
                 :data (-> (rand-int 5)
+                          (inc)
                           (repeatedly #(do {:label (rand-label)
                                             :value (rand-int 99)}))
                           (vec))}

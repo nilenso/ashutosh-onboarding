@@ -4,7 +4,7 @@
             [fhir-quest.utils :as utils])
   (:import java.util.concurrent.TimeUnit))
 
-(defn- aggregate-encounter-duration-avg! [db-conn]
+(defn aggregate-encounter-duration-avg! [db-conn]
   (let [avg-duration-mins
         (->> db-conn
              (repo/list-encounters)
@@ -16,7 +16,7 @@
                                    [{:label "Average (minutes)"
                                      :value avg-duration-mins}])))
 
-(defn- aggregate-patient-encounter-duration-groups! [db-conn]
+(defn aggregate-patient-encounter-duration-groups! [db-conn]
   (->> db-conn
        (repo/list-encounters)
        (reduce #(assoc %1
@@ -40,7 +40,7 @@
                :value v}))
        (repo/update-aggregation-data! db-conn "patient-encounter-duration-groups")))
 
-(defn- aggregate-patient-age-groups! [db-conn]
+(defn aggregate-patient-age-groups! [db-conn]
   (->> db-conn
        (repo/list-patients)
        (map #(utils/months-since (get % :birth_date)))
@@ -57,14 +57,14 @@
                :value v}))
        (repo/update-aggregation-data! db-conn "patient-age-group")))
 
-(defn- aggregate-patient-language-groups! [db-conn]
+(defn aggregate-patient-language-groups! [db-conn]
   (->> db-conn
        (repo/list-patients)
        (utils/count-by #(get % :language))
        (map (fn [[k v]] {:label k :value v}))
        (repo/update-aggregation-data! db-conn "patient-language")))
 
-(defn- aggregate-patient-marital-status-groups! [db-conn]
+(defn aggregate-patient-marital-status-groups! [db-conn]
   (->> db-conn
        (repo/list-patients)
        (utils/count-by #(get % :marital_status))
