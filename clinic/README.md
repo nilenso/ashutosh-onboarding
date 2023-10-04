@@ -1,5 +1,16 @@
 # Clinic
 
+The software system is built for an orthopedic clinic to keep the scope of this
+project narrow. The clinics using this system only provide treatments for the
+following condition.
+
+- Back pain
+- Bone fracture
+- Arthritis
+- Sprains
+- Joint pain
+- Injuries to tendons and ligaments
+
 ## Developer Quick Start
 
 ### Prerequisites
