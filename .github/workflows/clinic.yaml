@@ -1,0 +1,32 @@
+name: Clinic
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "**"
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    branches:
+      - main
+
+env:
+  JDK_DISTRIBUTION: temurin
+  JAVA_VERSION: 17
+
+jobs:
+  clj-tests:
+    name: Clojure Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ./clinic
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v3
+        with:
+          distribution: ${{ env.JDK_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+      - run: lein test
