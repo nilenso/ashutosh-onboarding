@@ -1,0 +1,8 @@
+{:source-paths ["src/cljs"]
+ :dependencies [[nrepl "1.0.0"]]
+ :builds       {:app {:target     :browser
+                      :output-dir "resources/public/js"
+                      :asset-path "/js"
+                      :modules    {:app {:entries [clinic.core]}}
+                      :devtools {:after-load clinic.core/mount-root}}}
+ :dev-http {8000 "resources/public"}}
