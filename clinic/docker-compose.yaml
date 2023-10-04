@@ -66,8 +66,8 @@ services:
       spring.datasource.username: admin
       spring.datasource.password: password
       hapi.fhir.default_encoding: json
-      jpa.properties.hibernate.dialect: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect
-      jpa.properties.hibernate.search.enabled: false
+      spring.jpa.properties.hibernate.dialect: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect
+      spring.jpa.properties.hibernate.search.enabled: false
     volumes:
       - hapi-data:/data/hapi
     ports:
