@@ -1,0 +1,84 @@
+version: "3.9"
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks: [default]
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin
+    depends_on:
+      - postgres
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.org
+      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - pgadmin:/root/.pgadmin
+    ports:
+      - "5433:80"
+    networks: [default]
+    restart: unless-stopped
+
+  db-init:
+    container_name: db-init
+    depends_on:
+      - postgres
+    image: postgres:16
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: admin
+      PGPASSWORD: password
+    entrypoint: sh
+    command:
+      - -c
+      - |
+        while ! psql -c "select 1" >/dev/null 2>&1; do
+          sleep 1s
+          echo "waiting for postgres container..."
+        done
+        psql -c "drop database if exists hapi"
+        psql -c "create database hapi"
+    networks: [default]
+
+  hapi-fhir:
+    container_name: hapi-fhir
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    image: hapiproject/hapi:latest
+    environment:
+      spring.datasource.driverClassName: org.postgresql.Driver
+      spring.datasource.url: jdbc:postgresql://postgres:5432/hapi
+      spring.datasource.username: admin
+      spring.datasource.password: password
+      hapi.fhir.default_encoding: json
+      jpa.properties.hibernate.dialect: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect
+      jpa.properties.hibernate.search.enabled: false
+    volumes:
+      - hapi-data:/data/hapi
+    ports:
+      - 8080:8080
+    networks: [default]
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
+  hapi-data:
