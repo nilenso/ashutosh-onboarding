@@ -1,4 +1,5 @@
-.clj-kondo/
+.clj-kondo/.cache
 .lsp/
 target/
 resources/public/js
+.env

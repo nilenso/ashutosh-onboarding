@@ -1,4 +1,7 @@
-(ns clinic.core)
+(ns clinic.core
+  (:require [clinic.config :as config]
+            [mount.core :as mount]))
 
 (defn -main []
-  (prn "Hello, world!"))
+  (mount/start)
+  (prn (config/read :fhir-server-base-url) (config/read :http-port)))
