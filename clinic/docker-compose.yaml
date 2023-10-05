@@ -11,7 +11,7 @@ services:
     volumes:
       - postgres:/data/postgres
     ports:
-      - "5432:5432"
+      - 5432:5432
     networks: [default]
     restart: unless-stopped
 
@@ -28,7 +28,7 @@ services:
     volumes:
       - pgadmin:/root/.pgadmin
     ports:
-      - "5433:80"
+      - 5433:80
     networks: [default]
     restart: unless-stopped
 
@@ -71,7 +71,7 @@ services:
     volumes:
       - hapi-data:/data/hapi
     ports:
-      - 8080:8080
+      - 8090:8080
     networks: [default]
 
 networks:
