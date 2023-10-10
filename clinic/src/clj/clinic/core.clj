@@ -11,7 +11,7 @@
   ([join-thread]
    (mount/start)
    (reset! server
-           (jetty/run-jetty (config/wrap #'routes/handler)
+           (jetty/run-jetty #'routes/handler
                             {:port (config/get-value :http-port)
                              :join? join-thread}))))
 

@@ -3,8 +3,8 @@
             [compojure.core :refer [defroutes POST]]
             [ring.util.response :as r]))
 
-(defn- create-patient [{{fhir-server-url :fhir-server-base-url} :config
-                        params :body}]
+(defn- create-patient! [{{fhir-server-url :fhir-server-base-url} :config
+                         params :body}]
   (try
     (-> (svc/create! fhir-server-url params)
         (r/response)
@@ -16,4 +16,4 @@
         (throw e)))))
 
 (defroutes handler
-  (POST "/" _ create-patient))
+  (POST "/" _ create-patient!))

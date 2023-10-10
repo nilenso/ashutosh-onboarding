@@ -7,7 +7,8 @@
 (deftest get-value-test
   (with-redefs [aero/read-config (constantly {:test-key "test-val"})]
     (mount/start #'config/config)
-    (is (= "test-val" (config/get-value :test-key)))))
+    (is (= "test-val" (config/get-value :test-key)))
+    (mount/stop)))
 
 (deftest wrap-test
   (let [request (atom {})
@@ -16,4 +17,5 @@
     (with-redefs [aero/read-config (constantly test-config)]
       (mount/start #'config/config)
       ((config/wrap next-handler) {:method :get})
-      (is (= test-config (@request :config))))))
+      (is (= test-config (@request :config)))
+      (mount/stop))))

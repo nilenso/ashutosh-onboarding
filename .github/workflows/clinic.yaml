@@ -16,17 +16,34 @@ env:
   JAVA_VERSION: 17
 
 jobs:
-  clj-tests:
-    name: Clojure Tests
+  tests:
+    name: Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    services:
+      hapi-fhir:
+        image: hapiproject/hapi:latest
+        env:
+          server.port: 8090
+          hapi.fhir.tester.home.server_address: http://localhost:8090/fhir
+          hapi.fhir.allow_multiple_delete: true
+        ports:
+          - 8090:8090
     defaults:
       run:
         working-directory: ./clinic
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
+      - name: Checkout Source
+        uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v3
         with:
           distribution: ${{ env.JDK_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
-      - run: lein test
+
+      # can't use `services.[id].options` to add Docker health checks because
+      # HAPI has a scratch docker image without a shell installation.
+      - name: HAPI FHIR Health Check
+        run: while ! curl -sSI "http://localhost:8090"; do sleep 5; done
+      - name: Run Tests
+        run: lein test
