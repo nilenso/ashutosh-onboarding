@@ -3,6 +3,7 @@
   :url "https://github.com/nilenso/ashutosh-onboarding/blob/main/clinic"
   :dependencies [[aero "1.1.6"]
                  [clj-http "3.12.3"]
+                 [clojure.java-time "1.3.0"]
                  [compojure "1.7.0"]
                  [mount "0.1.17"]
                  [org.clojure/clojure "1.11.1"]

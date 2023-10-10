@@ -1,5 +1,6 @@
 (ns clinic.routes.core
-  (:require [clinic.routes.patient :as patient]
+  (:require [clinic.config :as config]
+            [clinic.routes.patient :as patient]
             [clojure.stacktrace :as stacktrace]
             [compojure.core :refer [context defroutes]]
             [compojure.route :refer [not-found]]
@@ -22,6 +23,7 @@
 (def handler
   "The default API route handler."
   (-> routes
+      (config/wrap)
       (wrap-json-body {:keywords? true})
       (wrap-json-response)
       (wrap-exception-handler)))

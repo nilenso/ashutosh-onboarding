@@ -70,6 +70,7 @@ services:
       spring.jpa.properties.hibernate.search.enabled: false
       server.port: 8090
       hapi.fhir.tester.home.server_address: http://localhost:8090/fhir
+      hapi.fhir.allow_multiple_delete: true
     volumes:
       - hapi-data:/data/hapi
     ports:

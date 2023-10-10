@@ -2,7 +2,8 @@
   (:require [clinic.fhir.client :as fc]
             [clinic.fhir.utils :as fu]
             [clojure.spec.alpha :as s]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [java-time.api :as jt]))
 
 (def mrn-system "urn:nilenso:clinic:mrn")
 (def marital-status-system "http://hl7.org/fhir/ValueSet/marital-status")
@@ -11,13 +12,17 @@
 
 (def ^:private not-blank? (complement string/blank?))
 
+(defn- date? [v]
+  (try (jt/local-date v)
+       (catch Exception _ nil)))
+
 (s/def ::id (s/and string? not-blank?))
-(s/def ::mrn (s/and string? not-blank?))
+(s/def ::mrn (s/and string? (partial re-matches #"\d{3}-\d{3}-\d{3}")))
 (s/def ::first-name (s/and string? not-blank?))
 (s/def ::last-name (s/and string? not-blank?))
-(s/def ::birth-date (s/and string? not-blank?))
+(s/def ::birth-date (s/and string? date?))
 (s/def ::gender #{"male" "female" "other" "unknown"})
-(s/def ::marital-status #{nil, "A" "D" "I" "L" "M" "P" "S" "T" "U" "W" "UNK"})
+(s/def ::marital-status (s/nilable #{"A" "D" "I" "L" "M" "P" "S" "T" "U" "W" "UNK"}))
 (s/def ::email (s/nilable (s/and string? not-blank?)))
 (s/def ::phone (s/nilable (s/and string? not-blank?)))
 
@@ -29,7 +34,7 @@
   (s/keys :req-un [::id ::mrn ::first-name ::last-name ::birth-date ::gender]
           :opt-un [::marital-status ::email ::phone]))
 
-(defn- generate-mrn []
+(defn generate-mrn []
   (String/format "%03d-%03d-%03d"
                  (into-array [(rand-int 999)
                               (rand-int 999)
@@ -43,11 +48,11 @@
                                 :given [(params :first-name)]}]
                         :birthDate (params :birth-date)
                         :gender (params :gender)
-                        :maritalStatus {:coding [{:system marital-status-system
-                                                  :code (or (get params :marital-status)
-                                                            "UNK")}]}
                         :telecom []
                         :active true})]
+    (when (params :marital-status)
+      (swap! resource assoc :maritalStatus {:coding [{:system marital-status-system
+                                                      :code (params :marital-status)}]}))
     (when (params :email)
       (swap! resource update :telecom conj {:system email-system
                                             :value (params :email)}))
