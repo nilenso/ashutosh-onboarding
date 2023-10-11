@@ -1,6 +1,10 @@
-(ns clinic.core)
+(ns clinic.core
+  (:require [clinic.pages.core :as pages]
+            [reagent.dom :as dom]))
 
-(defn mount-root [])
+(defn mount-root []
+  (dom/render [pages/home]
+              (.getElementById js/document "app")))
 
-(defn init! []
-  (js/console.log "Hello, world!"))
+(defn ^:export init! []
+  (mount-root))
