@@ -15,3 +15,6 @@
 (defn get []
   (rf/dispatch-sync [::events/get]) ; ensure that value is present in app state.
   (rf/subscribe [::subs/current-role]))
+
+(defn clear []
+  (rf/dispatch [::events/set nil]))

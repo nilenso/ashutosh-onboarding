@@ -38,7 +38,7 @@
 (defn root []
   (let [current-role (user-role/get)]
     (fn []
-      [components/page
+      [components/page {:logout-enabled @current-role}
        (case @current-role
          "nurse" [nurse-fn-list]
          [role-selector])])))
