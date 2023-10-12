@@ -1,4 +1,4 @@
-(ns clinic.pages.home
+(ns clinic.views.home
   (:require [clinic.components :as components]
             [clinic.user-role.core :as user-role]))
 
@@ -6,7 +6,7 @@
   (let [current-role (user-role/get)
         !select (atom nil)]
     (fn []
-      [:div {:class ["flex" "flex-col" "gap-8" "items-center"]}
+      [:section {:class ["flex" "flex-col" "gap-8" "items-center"]}
        [components/heading-2 "Login As"]
        [:div {:class ["flex" "flex-row" "gap-6"]}
         [:select {:defaultValue (or @current-role "doctor")
@@ -30,7 +30,7 @@
                                 :class ["text-blue-600" "hover:underline"]}
                             %1])]
 
-    [:div {:class ["flex" "flex-col" "gap-8"]}
+    [:section {:class ["flex" "flex-col" "gap-8"]}
      [components/heading-2 "Operations"]
      [:ol {:class ["list-decimal" "list-inside"]}
       [list-item "Add patient" "/patients/new"]]]))
@@ -38,7 +38,6 @@
 (defn root []
   (let [current-role (user-role/get)]
     (fn []
-      [components/page {:logout-enabled @current-role}
-       (case @current-role
-         "nurse" [nurse-fn-list]
-         [role-selector])])))
+      (case @current-role
+        "nurse" [nurse-fn-list]
+        [role-selector]))))
