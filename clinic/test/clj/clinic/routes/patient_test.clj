@@ -1,8 +1,9 @@
 (ns clinic.routes.patient-test
   (:require [clinic.routes.core :as routes]
             [clinic.service.patient :as svc]
-            [clojure.stacktrace :as st]
             [clojure.test :refer [deftest is testing]]
+            [clojure.tools.logging :as log]
+            [clojure.tools.logging.impl :as log-impl]
             [ring.mock.request :as mr]))
 
 (defn- create-patient-request []
@@ -35,6 +36,5 @@
 
       (testing "with unknown service error"
         (reset! response-fn #(throw (RuntimeException. "test-error")))
-        (is (= 500 (with-redefs [println (constantly nil)
-                                 st/print-stack-trace (constantly nil)]
+        (is (= 500 (binding [log/*logger-factory* log-impl/disabled-logger-factory]
                      (:status (routes/handler (create-patient-request))))))))))
