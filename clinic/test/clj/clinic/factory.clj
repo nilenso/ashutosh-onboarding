@@ -1,7 +1,7 @@
 (ns clinic.factory
-  (:require [clojure.spec.gen.alpha :as gen]
+  (:require [clinic.specs.patient :as specs]
             [clojure.spec.alpha :as s]
-            [clinic.service.patient :as patient]))
+            [clojure.spec.gen.alpha :as gen]))
 
 (defn- generate-date []
   (String/format "%04d-%02d-%02d"
@@ -15,6 +15,6 @@
       (constantly)))
 
 (defn create-params []
-  (->> {::patient/birth-date (with-generator-fn generate-date)}
-       (s/gen ::patient/create-params)
+  (->> {::specs/birth-date (with-generator-fn generate-date)}
+       (s/gen ::specs/create-params)
        (gen/generate)))

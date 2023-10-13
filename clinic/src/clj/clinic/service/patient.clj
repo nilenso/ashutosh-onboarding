@@ -1,38 +1,14 @@
 (ns clinic.service.patient
   (:require [clinic.fhir.client :as fc]
             [clinic.fhir.utils :as fu]
+            [clinic.specs.patient :as specs]
             [clojure.spec.alpha :as s]
-            [clojure.string :as string]
-            [java-time.api :as jt]))
+            [clojure.string :as string]))
 
 (def mrn-system "urn:nilenso:clinic:mrn")
 (def marital-status-system "http://hl7.org/fhir/ValueSet/marital-status")
 (def email-system "email")
 (def phone-system "phone")
-
-(def ^:private not-blank? (complement string/blank?))
-
-(defn- date? [v]
-  (try (jt/local-date v)
-       (catch Exception _ nil)))
-
-(s/def ::id (s/and string? not-blank?))
-(s/def ::mrn (s/and string? (partial re-matches #"\d{3}-\d{3}-\d{3}")))
-(s/def ::first-name (s/and string? not-blank?))
-(s/def ::last-name (s/and string? not-blank?))
-(s/def ::birth-date (s/and string? date?))
-(s/def ::gender #{"male" "female" "other" "unknown"})
-(s/def ::marital-status (s/nilable #{"A" "D" "I" "L" "M" "P" "S" "T" "U" "W" "UNK"}))
-(s/def ::email (s/nilable (s/and string? not-blank?)))
-(s/def ::phone (s/nilable (s/and string? not-blank?)))
-
-(s/def ::create-params
-  (s/keys :req-un [::first-name ::last-name ::birth-date ::gender]
-          :opt-un [::marital-status ::email ::phone]))
-
-(s/def ::patient
-  (s/keys :req-un [::id ::mrn ::first-name ::last-name ::birth-date ::gender]
-          :opt-un [::marital-status ::email ::phone]))
 
 (defn generate-mrn []
   (String/format "%03d-%03d-%03d"
@@ -79,17 +55,17 @@
                  marital-status (assoc :marital-status marital-status)
                  email (assoc :email email)
                  phone (assoc :phone phone))]
-    (s/conform ::patient entity)))
+    (s/conform ::specs/patient entity)))
 
 (defn create!
   "Creates a new patient resource using attributes of the given `params` and
    uses the FHIR server at the given `fhir-server-url` to persist these Patient
    resources."
   [fhir-server-url params]
-  (when-not (s/valid? ::create-params params)
+  (when-not (s/valid? ::specs/create-params params)
     (throw (ex-info "invalid create params"
                     {:type :invalid-params
-                     :details (s/explain-data ::create-params params)})))
+                     :details (s/explain-data ::specs/create-params params)})))
   (loop [retry-count 3]
     (let [mrn (generate-mrn)
           resource (-> params

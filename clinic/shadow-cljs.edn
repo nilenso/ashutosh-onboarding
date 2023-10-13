@@ -1,4 +1,4 @@
-{:source-paths ["src/cljs"]
+{:source-paths ["src/cljc" "src/cljs"]
  :dependencies [[bidi "2.1.6"]
                 [kibu/pushy "0.3.8"]
                 [nrepl "1.0.0"]
