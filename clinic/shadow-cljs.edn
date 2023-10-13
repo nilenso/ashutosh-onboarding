@@ -9,5 +9,4 @@
                       :output-dir "resources/public/js"
                       :asset-path "/js"
                       :modules    {:app {:entries [clinic.core]}}
-                      :devtools {:after-load clinic.core/mount-root}}}
- :dev-http {8000 "resources/public"}}
+                      :devtools {:after-load clinic.core/mount-root}}}}
