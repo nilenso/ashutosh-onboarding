@@ -41,49 +41,45 @@
                               (rand-int 999)])))
 
 (defn- domain->fhir [params]
-  (let [resource (atom {:resourceType "Patient"
-                        :identifier [{:system mrn-system
-                                      :value (params :mrn)}]
-                        :name [{:family (params :last-name)
-                                :given [(params :first-name)]}]
-                        :birthDate (params :birth-date)
-                        :gender (params :gender)
-                        :telecom []
-                        :active true})]
-    (when (params :marital-status)
-      (swap! resource assoc :maritalStatus {:coding [{:system marital-status-system
-                                                      :code (params :marital-status)}]}))
-    (when (params :email)
-      (swap! resource update :telecom conj {:system email-system
-                                            :value (params :email)}))
-    (when (params :phone)
-      (swap! resource update :telecom conj {:system phone-system
-                                            :value (params :phone)}))
-    @resource))
+  (cond-> {:resourceType "Patient"
+           :identifier [{:system mrn-system
+                         :value (params :mrn)}]
+           :name [{:family (params :last-name)
+                   :given [(params :first-name)]}]
+           :birthDate (params :birth-date)
+           :gender (params :gender)
+           :telecom []
+           :active true}
+    (params :marital-status) (assoc :maritalStatus
+                                    {:coding [{:system marital-status-system
+                                               :code (params :marital-status)}]})
+    (params :email) (update :telecom conj {:system email-system
+                                           :value (params :email)})
+    (params :phone) (update :telecom conj {:system phone-system
+                                           :value (params :phone)})))
 
 (defn- fhir->domain [resource]
-  (let [entity (atom {:id (resource :id)
-                      :mrn (->> resource
-                                (:identifier)
-                                (fu/find-value mrn-system))
-                      :first-name (string/join " " (get-in resource [:name 0 :given]))
-                      :last-name (get-in resource [:name 0 :family])
-                      :birth-date (resource :birthDate)
-                      :gender (resource :gender)
-                      :marital-status (some->> resource
-                                               (:maritalStatus)
-                                               (fu/find-code marital-status-system))})
+  (let [marital-status (some->> resource
+                                (:maritalStatus)
+                                (fu/find-code marital-status-system))
         email (some->> resource
                        (:telecom)
                        (fu/find-value email-system))
         phone (some->> resource
                        (:telecom)
-                       (fu/find-value phone-system))]
-    (when email
-      (swap! entity assoc :email email))
-    (when phone
-      (swap! entity assoc :phone phone))
-    (s/conform ::patient @entity)))
+                       (fu/find-value phone-system))
+        entity (cond-> {:id (resource :id)
+                        :mrn (->> resource
+                                  (:identifier)
+                                  (fu/find-value mrn-system))
+                        :first-name (string/join " " (get-in resource [:name 0 :given]))
+                        :last-name (get-in resource [:name 0 :family])
+                        :birth-date (resource :birthDate)
+                        :gender (resource :gender)}
+                 marital-status (assoc :marital-status marital-status)
+                 email (assoc :email email)
+                 phone (assoc :phone phone))]
+    (s/conform ::patient entity)))
 
 (defn create!
   "Creates a new patient resource using attributes of the given `params` and

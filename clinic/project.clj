@@ -7,6 +7,7 @@
                  [compojure "1.7.0"]
                  [mount "0.1.17"]
                  [org.clojure/clojure "1.11.1"]
+                 [org.clojure/tools.logging "1.2.4"]
                  [ring/ring-core "1.10.0"]
                  [ring/ring-jetty-adapter "1.10.0"]
                  [ring/ring-json "0.5.1"]]
