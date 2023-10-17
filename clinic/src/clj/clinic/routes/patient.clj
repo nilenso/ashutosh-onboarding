@@ -17,7 +17,6 @@
       (catch Exception e
         (case (:type (ex-data e))
           :invalid-params (r/status 400)
-          :mrn-conflict (r/status 503)
           (throw e))))))
 
 (defroutes handler
