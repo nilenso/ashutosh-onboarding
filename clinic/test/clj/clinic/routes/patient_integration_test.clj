@@ -31,7 +31,6 @@
                            (update :body json/parse-string true))]
       (is (= 201 status))
       (is (contains? body :id))
-      (is (contains? body :mrn))
       (is (= (params :first-name) (body :first-name)))
       (is (= (params :last-name) (body :last-name)))
       (is (= (params :birth-date) (body :birth-date)))

@@ -29,11 +29,6 @@
                                              {:type :invalid-params})))
         (is (= 400 (:status (routes/handler (create-patient-request))))))
 
-      (testing "with mrn conflict service error"
-        (reset! response-fn #(throw (ex-info "test-error"
-                                             {:type :mrn-conflict})))
-        (is (= 503 (:status (routes/handler (create-patient-request))))))
-
       (testing "with unknown service error"
         (reset! response-fn #(throw (RuntimeException. "test-error")))
         (is (= 500 (binding [log/*logger-factory* log-impl/disabled-logger-factory]

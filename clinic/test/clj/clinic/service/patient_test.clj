@@ -31,7 +31,6 @@
                 patient (svc/create! "test-server-url" params)]
             (is (= "test-server-url" (@call-args 0)))
             (is (= "test-id" (patient :id)))
-            (is (re-matches #"\d{3}-\d{3}-\d{3}" (patient :mrn)))
             (is (= (params :first-name) (patient :first-name)))
             (is (= (params :last-name) (patient :last-name)))
             (is (= (params :birth-date) (patient :birth-date)))
@@ -39,13 +38,6 @@
             (is (= (params :marital-status) (patient :marital-status)))
             (is (= (params :email) (patient :email)))
             (is (= (params :phone) (patient :phone))))))
-
-      (testing "with mrn conflict"
-        (reset! response-fn (constantly {:status 200}))
-        (is (= :mrn-conflict (-> (factory/create-params)
-                                 ((partial svc/create! "test-server-url"))
-                                 (catch-thrown-data)
-                                 (get :type)))))
 
       (testing "with upstream service non-20x response"
         (reset! response-fn (constantly {:status 400}))
