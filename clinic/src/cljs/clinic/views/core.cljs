@@ -31,7 +31,6 @@
   (let [current-role (user-role/get)
         current-view (rf/subscribe [::current-view-id])]
     (fn []
-      (println @current-view)
       [components/page {:logout-enabled @current-role
                         :on-logout-click #(do (user-role/clear)
                                               (router/replace-token! "/"))}
