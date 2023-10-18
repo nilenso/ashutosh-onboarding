@@ -15,7 +15,7 @@
                                 (reset! call-args (vec args))
                                 (@response-fn (second args)))]
       (testing "with missing required param fields"
-        (doseq [missing-field [:first-name :last-name :birth-date :gender]]
+        (doseq [missing-field [:first-name :last-name :birth-date :gender :phone]]
           (is (= :invalid-params (->  (factory/create-params)
                                       (dissoc missing-field)
                                       ((partial svc/create! "test-server-url"))
@@ -25,7 +25,7 @@
       (testing "with valid params"
         (reset! response-fn (fn [resource] {:status 201
                                             :body (assoc resource :id "test-id")}))
-        (doseq [missing-field [:marital-status :email :phone nil]]
+        (doseq [missing-field [:marital-status :email nil]]
           (let [params (-> (factory/create-params)
                            (dissoc missing-field))
                 patient (svc/create! "test-server-url" params)]

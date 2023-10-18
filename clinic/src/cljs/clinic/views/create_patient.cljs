@@ -35,7 +35,7 @@
 (defn form-data [form]
   (-> form
       (js/FormData.)
-      (u/form-data->map #{:marital-status :email :phone})))
+      (u/form-data->map #{:marital-status :email})))
 
 (defn find-invalid-keys [form]
   (->> form
@@ -84,14 +84,14 @@
          [components/text-field {:name :first-name
                                  :label "First Name *"
                                  :placeholder "Jane"
-                                 :error-msg "Please enter a valid first name!"
+                                 :error-msg "Please enter a first name!"
                                  :touched? (contains? @touched? :first-name)
                                  :invalid? (contains? @invalid? :first-name)}]
 
          [components/text-field {:name :last-name
                                  :label "Last Name *"
                                  :placeholder "Doe"
-                                 :error-msg "Please enter a valid last name!"
+                                 :error-msg "Please enter a last name!"
                                  :touched? (contains? @touched? :last-name)
                                  :invalid? (contains? @invalid? :last-name)}]]
 
@@ -99,7 +99,7 @@
          [components/text-field {:name :birth-date
                                  :label "Date of Birth *"
                                  :placeholder "1999-12-30"
-                                 :error-msg "Please enter a valid date of birth in YYYY-MM-DD format!"
+                                 :error-msg "Please enter a date in YYYY-MM-DD format!"
                                  :touched? (contains? @touched? :birth-date)
                                  :invalid? (contains? @invalid? :birth-date)}]
 
@@ -112,6 +112,20 @@
            ["Other" "other"]
            ["Unknown" "unknown"]]]]
 
+        [components/text-field {:name :phone
+                                :label "Phone *"
+                                :placeholder "0000-000-000"
+                                :error-msg "Please enter a phone number!"
+                                :touched? (contains? @touched? :phone)
+                                :invalid? (contains? @invalid? :phone)}]
+
+        [components/text-field {:name :email
+                                :label "Email"
+                                :placeholder "jane@doe.org"
+                                :error-msg "Please enter an email address!"
+                                :touched? (contains? @touched? :email)
+                                :invalid? (contains? @invalid? :email)}]
+
         [components/select-field
          :marital-status
          "Marital Status"
@@ -122,18 +136,5 @@
           ["Widowed" "W"]
           ["Unknown" "UNK"]]]
 
-        [components/text-field {:name :email
-                                :label "Email"
-                                :placeholder "jane@doe.org"
-                                :error-msg "Please enter a valid email!"
-                                :touched? (contains? @touched? :email)
-                                :invalid? (contains? @invalid? :email)}]
-
-        [components/text-field {:name :phone
-                                :label "Phone"
-                                :placeholder "0000-000-000"
-                                :error-msg "Please enter a valid phone!"
-                                :touched? (contains? @touched? :phone)
-                                :invalid? (contains? @invalid? :phone)}]
-
+        [:div {:class ["h-4"]}]
         [components/button "submit" "Add Patient" @submitting?]]])))

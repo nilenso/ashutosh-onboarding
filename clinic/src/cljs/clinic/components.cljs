@@ -80,19 +80,19 @@
       [:path
        {:d "M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"}]]]]])
 
-(defn button [type text loading]
+(defn button [type text loading?]
   [:button
-   {:disabled loading
+   {:disabled loading?
     :type type
-    :class [(if loading "bg-blue-400" "bg-blue-600")
-            (if loading "hover:bg-blue-400" "hover:bg-blue-800")
+    :class [(if loading? "bg-blue-400" "bg-blue-600")
+            (if loading? "hover:bg-blue-400" "hover:bg-blue-800")
             "text-white" "font-medium" "py-2" "px-4" "rounded-full"
             "focus:ring-4" "focus:outline-none" "focus:ring-blue-300"
             "rounded-full" "text-md" "text-center" "dark:bg-blue-600"
             "dark:hover:bg-blue-700" "dark:focus:ring-blue-800"
             "inline-flex" "items-center" "justify-center"]}
    [:svg
-    {:class [(if loading "visible" "invisible")
+    {:class [(if loading? "visible" "invisible")
              "inline" "w-6" "h-6" "-ml-9" "mr-3" "text-white" "animate-spin"]
      :aria-hidden "true"
      :role "status"

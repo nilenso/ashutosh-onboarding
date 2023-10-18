@@ -22,9 +22,9 @@
 (s/def ::phone (s/nilable (s/and string? not-blank?)))
 
 (s/def ::create-params
-  (s/keys :req-un [::first-name ::last-name ::birth-date ::gender]
-          :opt-un [::marital-status ::email ::phone]))
+  (s/keys :req-un [::first-name ::last-name ::birth-date ::gender ::phone]
+          :opt-un [::marital-status ::email]))
 
 (s/def ::patient
-  (s/keys :req-un [::id ::first-name ::last-name ::birth-date ::gender]
-          :opt-un [::marital-status ::email ::phone]))
+  (s/keys :req-un [::id ::first-name ::last-name ::birth-date ::gender ::phone]
+          :opt-un [::marital-status ::email]))
