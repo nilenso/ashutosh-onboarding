@@ -1,13 +1,14 @@
 (ns clinic.factory
   (:require [clinic.specs.patient :as specs]
             [clojure.spec.alpha :as s]
-            [clojure.spec.gen.alpha :as gen]))
+            [clojure.spec.gen.alpha :as gen])
+  (:import java.time.LocalDate))
 
-(defn- generate-date []
-  (String/format "%04d-%02d-%02d"
-                 (into-array [(+ 1970 (rand-int 52))
-                              (inc (rand-int 12))
-                              (inc (rand-int 28))])))
+(defn- rand-date []
+  (->> 30000 ; ~ 82 years
+       (rand-int)
+       (.minusDays (LocalDate/now))
+       (.toString)))
 
 (defn- with-generator-fn [gen-fn]
   (-> (fn [& _] (gen-fn))
@@ -15,6 +16,6 @@
       (constantly)))
 
 (defn create-params []
-  (->> {::specs/birth-date (with-generator-fn generate-date)}
+  (->> {::specs/birth-date (with-generator-fn rand-date)}
        (s/gen ::specs/create-params)
        (gen/generate)))
