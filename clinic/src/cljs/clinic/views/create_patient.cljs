@@ -4,7 +4,6 @@
             [clinic.router :as router]
             [clinic.specs.patient :as specs]
             [clinic.utils :as u]
-            [clojure.spec.alpha :as s]
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]
             [reagent.core :as r]))
@@ -33,26 +32,45 @@
 (rf/reg-sub ::submitting-form :-> ::submitting-form)
 (rf/reg-sub ::submit-form-error-code :-> ::submit-form-error-code)
 
+(defn form-data [form]
+  (-> form
+      (js/FormData.)
+      (u/form-data->map #{:marital-status :email :phone})))
+
+(defn find-invalid-keys [form]
+  (->> form
+       (form-data)
+       (u/invalid-keys ::specs/create-params)))
+
 (defn root []
-  (let [form-valid? (r/atom nil)
+  (let [form-ref (atom nil)
+        touched? (r/atom #{})
+        invalid? (r/atom #{})
         submitting? (rf/subscribe [::submitting-form])
         submit-error-code (rf/subscribe [::submit-form-error-code])]
     (fn []
       [:section {:class ["flex" "flex-col" "gap-12"]}
        [components/heading-2 "Add a Patient"]
-       [:form {:method "POST"
+       [:form {:ref (partial reset! form-ref)
+               :method "POST"
                :action "/api/v1/patients/"
                :class ["w-full" "flex" "flex-col" "gap-4"]
+               :on-blur #(do (swap! touched? conj (-> %
+                                                      (.-target)
+                                                      (.-id)
+                                                      (keyword)))
+                             (reset! invalid? (find-invalid-keys @form-ref)))
+               :on-change #(do (swap! touched? conj (-> %
+                                                        (.-target)
+                                                        (.-id)
+                                                        (keyword)))
+                               (reset! invalid? (find-invalid-keys @form-ref)))
                :on-submit #(do (.preventDefault %)
-                               (let [form-data (-> %
-                                                   (.-target)
-                                                   (js/FormData.)
-                                                   (u/form-data->map))]
-                                 (->> form-data
-                                      (s/valid? ::specs/create-params)
-                                      (reset! form-valid?))
-
-                                 (when @form-valid?
+                               (let [form-data (form-data @form-ref)]
+                                 ;; touch all fields and revalidate data.
+                                 (reset! touched? (set (keys form-data)))
+                                 (reset! invalid? (find-invalid-keys @form-ref))
+                                 (when (empty? @invalid?)
                                    (rf/dispatch [::submit-form form-data]))))}
 
         (when @submit-error-code
@@ -62,31 +80,28 @@
                   correct?"
              "There was an error while adding patient. Please try again!")])
 
-        (when (false? @form-valid?)
-          [components/danger-alert "Missing required fields or invalid input!"])
+        [:div {:class ["w-full" "flex" "flex-col" "md:flex-row" "gap-8" "md:gap-12"]}
+         [components/text-field {:name :first-name
+                                 :label "First Name *"
+                                 :placeholder "Jane"
+                                 :error-msg "Please enter a valid first name!"
+                                 :touched? (contains? @touched? :first-name)
+                                 :invalid? (contains? @invalid? :first-name)}]
+
+         [components/text-field {:name :last-name
+                                 :label "Last Name *"
+                                 :placeholder "Doe"
+                                 :error-msg "Please enter a valid last name!"
+                                 :touched? (contains? @touched? :last-name)
+                                 :invalid? (contains? @invalid? :last-name)}]]
 
         [:div {:class ["w-full" "flex" "flex-col" "md:flex-row" "gap-8" "md:gap-12"]}
-         [components/text-field
-          :first-name
-          "First Name *"
-          "Jane"
-          "Please enter a valid first name!"
-          (partial s/valid? ::specs/first-name)]
-
-         [components/text-field
-          :last-name
-          "Last Name *"
-          "Doe"
-          "Please enter a valid last name!"
-          (partial s/valid? ::specs/last-name)]]
-
-        [:div {:class ["w-full" "flex" "flex-col" "md:flex-row" "gap-8" "md:gap-12"]}
-         [components/text-field
-          :birth-date
-          "Date of Birth *"
-          "1999-12-30"
-          "Please enter a valid date of birth in YYYY-MM-DD format!"
-          (partial s/valid? ::specs/birth-date)]
+         [components/text-field {:name :birth-date
+                                 :label "Date of Birth *"
+                                 :placeholder "1999-12-30"
+                                 :error-msg "Please enter a valid date of birth in YYYY-MM-DD format!"
+                                 :touched? (contains? @touched? :birth-date)
+                                 :invalid? (contains? @invalid? :birth-date)}]
 
          [components/select-field
           :gender
@@ -107,18 +122,18 @@
           ["Widowed" "W"]
           ["Unknown" "UNK"]]]
 
-        [components/text-field
-         :email
-         "Email"
-         "jane@doe.org"
-         "Please enter a valid email!"
-         (partial s/valid? ::specs/email)]
+        [components/text-field {:name :email
+                                :label "Email"
+                                :placeholder "jane@doe.org"
+                                :error-msg "Please enter a valid email!"
+                                :touched? (contains? @touched? :email)
+                                :invalid? (contains? @invalid? :email)}]
 
-        [components/text-field
-         :phone
-         "Phone"
-         "0000-000-000"
-         "Please enter a valid phone!"
-         (partial s/valid? ::specs/phone)]
+        [components/text-field {:name :phone
+                                :label "Phone"
+                                :placeholder "0000-000-000"
+                                :error-msg "Please enter a valid phone!"
+                                :touched? (contains? @touched? :phone)
+                                :invalid? (contains? @invalid? :phone)}]
 
         [components/button "submit" "Add Patient" @submitting?]]])))

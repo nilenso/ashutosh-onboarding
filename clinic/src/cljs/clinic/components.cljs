@@ -28,31 +28,30 @@
                 "Logout"]])]]
           (r/children this))))
 
-(defn text-field [_ _ _ _ validation-fn]
-  (let [valid? (r/atom true)]
-    (fn [name label placeholder error-msg _]
-      [:div {:class ["w-full" "flex" "flex-col" "gap-2"]}
-       [:label {:for name
-                :class ["block" "uppercase" "tracking-wide" "text-gray-600"
-                        "text-xs" "font-bold"]}
-        label]
+(defn text-field []
+  (let [{name :name
+         label :label
+         placeholder :placeholder
+         error-msg :error-msg
+         touched? :touched?
+         invalid? :invalid?} (r/props (r/current-component))]
+    [:div {:class ["w-full" "flex" "flex-col" "gap-2"]}
+     [:label {:for name
+              :class ["block" "uppercase" "tracking-wide" "text-gray-600"
+                      "text-xs" "font-bold"]}
+      label]
 
-       [:input {:id name
-                :name name
-                :placeholder placeholder
-                :class ["appearance-none" "block" "w-full" "bg-gray-200"
-                        "text-gray-700" "border" "border-gray-200"
-                        "rounded" "py-3" "px-4" "leading-tight"
-                        "focus:outline-none" "focus:bg-white"
-                        "focus:border-gray-500"]
-                :on-change #(->> %
-                                 (.-target)
-                                 (.-value)
-                                 (validation-fn)
-                                 (reset! valid?))}]
-       [:p {:class [(if @valid? "invisible" "visible")
-                    "text-red-500" "text-xs" "italic"]}
-        error-msg]])))
+     [:input {:id name
+              :name name
+              :placeholder placeholder
+              :class ["appearance-none" "block" "w-full" "bg-gray-200"
+                      "text-gray-700" "border" "border-gray-200"
+                      "rounded" "py-3" "px-4" "leading-tight"
+                      "focus:outline-none" "focus:bg-white"
+                      "focus:border-gray-500"]}]
+     [:p {:class [(if (and touched? invalid?) "visible" "invisible")
+                  "text-red-500" "text-xs" "italic"]}
+      error-msg]]))
 
 (defn select-field [name label default-value options]
   [:div {:class ["w-full" "flex" "flex-col" "gap-2"]}
