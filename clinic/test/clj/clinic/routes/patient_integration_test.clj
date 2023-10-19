@@ -1,10 +1,10 @@
 (ns clinic.routes.patient-integration-test
-  (:require [clinic.factory :as factory]
+  (:require [cheshire.core :as json]
+            [clinic.factory :as factory]
             [clinic.routes.core :as routes]
             [clinic.test-utils :as tu]
             [clojure.test :refer [deftest is testing use-fixtures]]
-            [ring.mock.request :as mr]
-            [cheshire.core :as json]))
+            [ring.mock.request :as mr]))
 
 (defn- create-patient-request [body]
   (-> (mr/request :post "/api/v1/patients/")
@@ -36,5 +36,5 @@
       (is (= (params :birth-date) (body :birth-date)))
       (is (= (params :gender) (body :gender)))
       (is (= (params :marital-status) (body :marital-status)))
-      (is (= (params :phone) (body :phone)))
+      (is (tu/digits-equal? (params :phone) (body :phone)))
       (is (= (params :email) (body :email))))))

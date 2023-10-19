@@ -56,7 +56,11 @@
                      :details (s/explain-data ::specs/create-params params)})))
   (let [{status :status
          body   :body} (fc/create! fhir-server-url
-                                   (domain->fhir params)
+                                   (-> params
+                                       ;; ignore phone number formatting
+                                       ;; characters and only keep its digits.
+                                       (update :phone #(apply str (re-seq #"\d" %)))
+                                       (domain->fhir))
                                    nil)]
     (cond
       (= status 201) (fhir->domain body)

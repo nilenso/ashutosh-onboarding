@@ -114,7 +114,7 @@
 
         [components/text-field {:name :phone
                                 :label "Phone *"
-                                :placeholder "0000-000-000"
+                                :placeholder "+0 0000-000-000"
                                 :error-msg "Please enter a phone number!"
                                 :touched? (contains? @touched? :phone)
                                 :invalid? (contains? @invalid? :phone)}]

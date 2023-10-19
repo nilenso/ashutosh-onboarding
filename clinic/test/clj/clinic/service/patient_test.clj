@@ -2,6 +2,7 @@
   (:require [clinic.factory :as factory]
             [clinic.fhir.client :as fc]
             [clinic.service.patient :as svc]
+            [clinic.test-utils :as tu]
             [clojure.test :refer [deftest is testing]]))
 
 (defmacro catch-thrown-data [& body]
@@ -37,7 +38,7 @@
             (is (= (params :gender) (patient :gender)))
             (is (= (params :marital-status) (patient :marital-status)))
             (is (= (params :email) (patient :email)))
-            (is (= (params :phone) (patient :phone))))))
+            (is (tu/digits-equal? (params :phone) (patient :phone))))))
 
       (testing "with upstream service non-20x response"
         (reset! response-fn (constantly {:status 400}))

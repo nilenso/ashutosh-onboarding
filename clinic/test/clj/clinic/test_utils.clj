@@ -1,7 +1,7 @@
 (ns clinic.test-utils
   (:require [cheshire.core :as json]
-            [clj-http.client :as http]
             [clinic.config :as config]
+            [clj-http.client :as http]
             [mount.core :as mount]))
 
 (defn load-config-fixture [f]
@@ -23,3 +23,14 @@
       (config/get-value)
       (expunge-fhir-data!))
   (f))
+
+(defn digits-equal?
+  "Checks if digits in the given strings are in the same order and equal,
+   ignoring all other characters.
+
+       (digits-equal? \"a1b2c3\" \"123abc\") ;=> true
+       (digits-equal? \"a3b2c1\" \"123abc\") ;=> false
+   "
+  [this other]
+  (= (re-seq #"\d" this)
+     (re-seq #"\d" other)))
