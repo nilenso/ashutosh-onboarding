@@ -8,7 +8,6 @@
 (deftest create-test
   (let [[call-args response-fn mocked-fn] (tu/mock-fn)]
     (reset! response-fn (fn [_ params] {:status 201
-                                        :headers (params :headers)
                                         :body (params :body)}))
     (with-redefs [c/post mocked-fn]
       (testing "with Test resource"
@@ -29,15 +28,31 @@
           (is (= "resource-val" (get-in resp [:body :key])))
           (is (= "header-val" (get-in @call-args [1 :headers :header]))))))))
 
-(deftest get-test
+(deftest get-all-test
   (let [[call-args response-fn mocked-fn] (tu/mock-fn)]
-    (reset! response-fn (fn [_ params] {:status 200
-                                        :body (-> (params :query-params)
-                                                  (json/generate-string))}))
+    (reset! response-fn (->> {:key "response-val"}
+                             (json/generate-string)
+                             (assoc {:status 200} :body)
+                             (constantly)))
     (with-redefs [c/get mocked-fn]
-      (testing "with Test response"
+      (testing "with Test resource"
         (let [resp (client/get-all "http://test.base.url/fhir"
                                    "Test"
                                    {:key "query-val"})]
           (is (= "http://test.base.url/fhir/Test" (@call-args 0)))
-          (is (= "query-val" (get-in resp [:body :key]))))))))
+          (is (= "query-val" (get-in @call-args [1 :query-params :key])))
+          (is (= "response-val" (get-in resp [:body :key]))))))))
+
+(deftest get-by-id-test
+  (let [[call-args response-fn mocked-fn] (tu/mock-fn)]
+    (reset! response-fn (->> {:key "response-val"}
+                             (json/generate-string)
+                             (assoc {:status 200} :body)
+                             (constantly)))
+    (with-redefs [c/get mocked-fn]
+      (testing "with Test resource"
+        (let [resp (client/get-by-id "http://test.base.url/fhir"
+                                     "Test"
+                                     "1")]
+          (is (= "http://test.base.url/fhir/Test/1" (@call-args 0)))
+          (is (= "response-val" (get-in resp [:body :key]))))))))

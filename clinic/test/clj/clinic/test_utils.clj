@@ -21,7 +21,8 @@
   (-> (config/get-value :fhir-server-base-url)
       (str "/Patient")
       (http/post {:headers {"Content-Type" "application/fhir+json"}
-                  :body (json/generate-string patient)})))
+                  :body (json/generate-string patient)})
+      (update :body json/parse-string true)))
 
 (defn digits-equal?
   "Checks if digits in the given strings are in the same order and equal,

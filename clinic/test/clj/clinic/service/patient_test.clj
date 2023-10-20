@@ -88,3 +88,34 @@
                                     (svc/get-all "test-server-url")
                                     (tu/catch-thrown-data)
                                     (:type))))))))
+
+(deftest get-by-id-test
+  (let [[call-args response-fn mocked-fn] (tu/mock-fn)]
+    (with-redefs [fc/get-by-id mocked-fn]
+      (testing "with invalid params"
+        (doseq [invalid-id ["" " " "abc"]]
+          (is (= :invalid-params (->> (factory/get-all-params key invalid-id)
+                                      (svc/get-by-id "test-fhir-server")
+                                      (tu/catch-thrown-data)
+                                      (:type))))))
+
+      (testing "with valid params"
+        (reset! response-fn (fn [_ _ id]
+                              {:status 200
+                               :body (factory/fhir-patient :id id)}))
+        (let [patient (svc/get-by-id "test-server-url" "123")]
+          (is (= "test-server-url" (@call-args 0)))
+          (is (= "123" (@call-args 2)))
+          (is (= "123" (patient :id)))))
+
+      (testing "with Patient not found error"
+        (reset! response-fn (constantly {:status 404}))
+        (is (= :patient-not-found (->> (svc/get-by-id "test-server-url" "123")
+                                       (tu/catch-thrown-data)
+                                       (:type)))))
+
+      (testing "with upstream service error"
+        (reset! response-fn (constantly {:status 400}))
+        (is (= :upstream-error (->> (svc/get-by-id "test-server-url" "123")
+                                    (tu/catch-thrown-data)
+                                    (:type))))))))

@@ -34,6 +34,19 @@
         :invalid-params (r/status 400)
         (throw e)))))
 
+(defn- get-patient [{{fhir-server-url :fhir-server-base-url} :config
+                     {:keys [id]} :params}]
+  (try
+    (-> (svc/get-by-id fhir-server-url id)
+        (r/response)
+        (r/status 200))
+    (catch Exception e
+      (case (:type (ex-data e))
+        :invalid-params (r/status 400)
+        :patient-not-found (r/status 404)
+        (throw e)))))
+
 (defroutes handler
   (POST "/" _ create-patient!)
-  (GET "/" _ list-patients))
+  (GET "/" _ list-patients)
+  (GET "/:id" _ get-patient))

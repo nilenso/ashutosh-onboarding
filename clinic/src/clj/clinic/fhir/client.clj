@@ -30,3 +30,16 @@
                  :query-params query-params
                  :throw-exceptions false})
       (update :body json/parse-string true)))
+
+(defn get-by-id
+  "Looks up a FHIR resource of the given `resource-type` with the given `id` on
+   a FHIR server at the given `base-url`.
+
+   Returns the HTTP response of the server (Patient resource) after JSON parsing
+   its body."
+  [base-url resource-type id]
+  (-> base-url
+      (str "/" resource-type "/" id)
+      (http/get {:headers {"Accept" "application/fhir+json"}
+                 :throw-exceptions false})
+      (update :body json/parse-string true)))

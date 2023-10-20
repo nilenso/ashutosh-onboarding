@@ -54,10 +54,10 @@
       (is (tu/digits-equal? (params :phone) (body :phone)))
       (is (= (params :email) (body :email))))))
 
-(defn- get-all-patients-request [params]
+(defn- list-patients-request [params]
   (-> (mr/request :get "/api/v1/patients" params)))
 
-(deftest get-all-test
+(deftest list-patients-test
   (testing "with invalid query params"
     (tu/expunge-fhir-data!)
     (doseq [[key & invalid-vals] [[:phone "" " "]
@@ -65,7 +65,7 @@
                                   [:count "" " " "abc" "-"]]
             invalid-val invalid-vals]
       (is (= 400 (-> (factory/get-all-params key invalid-val)
-                     (get-all-patients-request)
+                     (list-patients-request)
                      (routes/handler)
                      (:status))))))
 
@@ -77,7 +77,7 @@
                                                        (u/extract-digits phone))))
       (doseq [phone phones]
         (let [{:keys [status body]} (-> {:phone phone}
-                                        (get-all-patients-request)
+                                        (list-patients-request)
                                         (routes/handler)
                                         (update :body json/parse-string true))]
           (is (= 200 status))
@@ -94,8 +94,38 @@
                                             [{:offset 4 :count 10} 1]
                                             [{:offset 3 :count 10} 2]]]
       (let [{:keys [status body]} (-> params
-                                      (get-all-patients-request)
+                                      (list-patients-request)
                                       (routes/handler)
                                       (update :body json/parse-string true))]
         (is (= 200 status))
         (is (= expected-result-count (count body)))))))
+
+(defn- get-patient-request [id]
+  (->> (str "/api/v1/patients/" id)
+       (mr/request :get)))
+
+(deftest get-patient-test
+  (testing "with invalid resource id in path param"
+    (tu/expunge-fhir-data!)
+    (is (= 400 (-> "%20%20"
+                   (get-patient-request)
+                   (routes/handler)
+                   (:status)))))
+
+  (testing "with non-existing resource id in path param"
+    (tu/expunge-fhir-data!)
+    (is (= 404 (-> (get-patient-request "1")
+                   (routes/handler)
+                   (:status)))))
+
+  (testing "with valid resource id in path param"
+    (tu/expunge-fhir-data!)
+    (let [patient-id (-> (factory/fhir-patient)
+                         (tu/create-fhir-patient!)
+                         (get-in [:body :id]))
+          {:keys [status body]} (-> patient-id
+                                    (get-patient-request)
+                                    (routes/handler)
+                                    (update :body json/parse-string true))]
+      (is (= 200 status))
+      (is (= patient-id (body :id))))))

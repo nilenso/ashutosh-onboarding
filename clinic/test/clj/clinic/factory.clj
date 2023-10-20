@@ -55,8 +55,9 @@
          overrides))
 
 
-(defn fhir-patient [& {:keys [phone]}]
+(defn fhir-patient [& {:keys [id phone]}]
   {:resourceType "Patient"
+   :id (or id (rand-int-str))
    :name [{:family (generate ::specs/last-name)
            :given [(generate ::specs/first-name)]}]
    :birthDate (rand-date)
