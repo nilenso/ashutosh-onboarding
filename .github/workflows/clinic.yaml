@@ -5,8 +5,9 @@ on:
       - main
     tags:
       - "**"
-    paths-ignore:
-      - "**.md"
+    paths:
+      - clinic/**
+      - .github/workflows/clinic.yaml
   pull_request:
     branches:
       - main
@@ -14,7 +15,7 @@ on:
 env:
   JDK_DISTRIBUTION: temurin
   JAVA_VERSION: 21
-  NODE_VERSION: 21
+  NODE_VERSION: 20
 
 jobs:
   tests:
@@ -92,12 +93,17 @@ jobs:
           npx shadow-cljs release app
       - name: Build Uberjar
         run: lein uberjar
+      # buildx uses QEMU. Docker Buildx is needed for multiplatform build.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.token }}
       - name: Generate Docker Image Tags
         id: docker-image-tags
         run: |
@@ -112,4 +118,117 @@ jobs:
         with:
           context: clinic
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.docker-image-tags.outputs.tags }}
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'push' # skip for pull requests.
+    needs:
+      - build
+    # GitHub won't allow using an env var to specify environment.
+    environment: ${{ startsWith(github.ref, 'refs/tags/') && 'production' || 'staging' }}
+    env:
+      DEPLOYMENT_ID: ${{ startsWith(github.ref, 'refs/tags/') && 'production' || 'staging' }}
+      SCP_DEST_PATH: /tmp/${{ github.sha }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOY_BOT_ACCESS_KEY }}
+    defaults:
+      run:
+        working-directory: ./clinic
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+      - name: Install prerequisites
+        run: |
+          sudo apt-get -qq update -y
+          sudo apt-get -qq install -y awscli
+      - name: Get Workflow Runner's Public IP
+        id: workflow-runner-ip
+        run: echo "ipv4=$(curl -s 'https://api.ipify.org')" >> "$GITHUB_OUTPUT"
+      - name: Authorize runner's SSH access to EC2 host
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id "$AWS_EC2_SG_ID" \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.workflow-runner-ip.outputs.ipv4 }}/32
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOY_BOT_SECRET_KEY }}
+          AWS_EC2_SG_ID: ${{ secrets.AWS_EC2_SG_ID }}
+
+      - name: Upload Systemd Service and Logrotate Config
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          source: clinic/deploy/systemd,clinic/deploy/logrotate
+          target: ${{ env.SCP_DEST_PATH }}
+          strip_components: 2 # remove `clinic/deploy/` path component at target.
+          rm: true # remove target directory before uploading data
+
+      - name: Configure Deployment
+        uses: appleboy/ssh-action@v1.0.0
+        env:
+          APP_ENV: ${{ secrets.APP_ENV }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ github.token }}
+          GHCR_IMAGE: ghcr.io/nilenso/ashutosh-onboarding/clinic:${{ env.DEPLOYMENT_ID == 'staging' && 'latest' || github.ref_name }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          # only pass sensitive env vars from here. for others, use GitHub's env
+          # context, which is a little less error-prone.
+          envs: APP_ENV,GHCR_TOKEN
+          script_stop: true # stop script after first failure.
+          script: |
+            # stop existing deployment
+            service_name="clinic@${{ env.DEPLOYMENT_ID }}.service"
+            sudo systemctl stop "$service_name" || true
+
+            # pull and tag the new docker image
+            echo "$GHCR_TOKEN" | sudo docker login ghcr.io -u ${{ env.GHCR_USER }} --password-stdin
+            sudo docker pull ${{ env.GHCR_IMAGE }}
+            sudo docker tag ${{ env.GHCR_IMAGE }} clinic:${{ env.DEPLOYMENT_ID }}
+            sudo docker logout ghcr.io
+
+            # write environment configuration
+            sudo mkdir -p /etc/clinic
+            echo "$APP_ENV" | sudo tee "/etc/clinic/${{ env.DEPLOYMENT_ID }}.env" > /dev/null
+
+            # update systemd unit
+            sudo chown root:root ${{ env.SCP_DEST_PATH }}/systemd/*
+            sudo chmod 644 ${{ env.SCP_DEST_PATH }}/systemd/*
+            sudo mv ${{ env.SCP_DEST_PATH }}/systemd/* /etc/systemd/system/
+
+            # reload systemd daemon and restart the service
+            sudo systemctl daemon-reload
+            sudo systemctl reenable "$service_name"
+            sudo systemctl restart "$service_name"
+
+            # deploy logrotate config
+            sudo chown root:root ${{ env.SCP_DEST_PATH }}/logrotate/*
+            sudo chmod 644 ${{ env.SCP_DEST_PATH }}/logrotate/*
+            sudo mv ${{ env.SCP_DEST_PATH }}/logrotate/* /etc/logrotate.d/
+
+            # clean-up
+            sudo docker image prune -f
+            sudo rm -rf ${{ env.SCP_DEST_PATH }}
+
+      - name: Revoke runner's SSH access from EC2 host
+        if: ${{ always() }}
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id "$AWS_EC2_SG_ID" \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.workflow-runner-ip.outputs.ipv4 }}/32
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOY_BOT_SECRET_KEY }}
+          AWS_EC2_SG_ID: ${{ secrets.AWS_EC2_SG_ID }}
