@@ -2,7 +2,8 @@
   (:require [clinic.config :as config]
             [clinic.routes.core :as routes]
             [mount.core :as mount]
-            [ring.adapter.jetty :as jetty]))
+            [ring.adapter.jetty :as jetty])
+  (:gen-class))
 
 (defonce server (atom nil))
 

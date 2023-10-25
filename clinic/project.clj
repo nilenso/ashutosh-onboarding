@@ -1,4 +1,4 @@
-(defproject clinic "0.1.0-SNAPSHOT"
+(defproject clinic "latest"
   :description "Onboarding project #2"
   :url "https://github.com/nilenso/ashutosh-onboarding/blob/main/clinic"
   :dependencies [[aero "1.1.6"]
