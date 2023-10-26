@@ -23,3 +23,11 @@
        (map :in)
        (flatten)
        (set)))
+
+(defn query-params
+  "Returns a keywordized map of query parameters in the given `url`."
+  [url]
+  (->> (js/URL. url "http://dummy")
+       (.-searchParams)
+       (map (fn [[k v]] [(keyword k) v]))
+       (into {})))

@@ -33,7 +33,8 @@
     [:section {:class ["flex" "flex-col" "gap-8"]}
      [components/heading-2 "Operations"]
      [:ol {:class ["list-decimal" "list-inside"]}
-      [list-item "Add patient" "/patients/new"]]]))
+      [list-item "Add patient" "/patients/new"]
+      [list-item "List Patients" "/patients"]]]))
 
 (defn root []
   (let [current-role (user-role/get)]

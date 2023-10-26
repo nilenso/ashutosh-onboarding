@@ -4,17 +4,20 @@
             [clinic.user-role.core :as user-role]
             [clinic.views.create-patient :as create-patient]
             [clinic.views.home :as home]
+            [clinic.views.list-patients :as list-patients]
             [clinic.views.not-found :as not-found]
             [clinic.views.view-patient :as view-patient]
             [re-frame.core :as rf]))
 
 (def ^:private views {::router/home home/root
                       ::router/create-patient create-patient/root
-                      ::router/view-patient view-patient/root})
+                      ::router/view-patient view-patient/root
+                      ::router/list-patients list-patients/root})
 
 (def ^:private titles {::router/home "Home"
                        ::router/create-patient "Add Patient"
-                       ::router/view-patient "Patient Info"})
+                       ::router/view-patient "Patient Info"
+                       ::router/list-patients "Patients"})
 
 (rf/reg-fx ::set-window-title
            (fn [title]

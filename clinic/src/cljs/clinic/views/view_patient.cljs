@@ -60,34 +60,33 @@
   (let [patient-id (-> (r/current-component)
                        (r/props)
                        (:id))
-        loading? (rf/subscribe [::patient patient-id ::loading])
-        patient (rf/subscribe [::patient patient-id ::data])
-        error-code (rf/subscribe [::patient patient-id ::error-code])]
+        loading? @(rf/subscribe [::patient patient-id ::loading])
+        patient @(rf/subscribe [::patient patient-id ::data])
+        error-code @(rf/subscribe [::patient patient-id ::error-code])]
     (rf/dispatch [::fetch-patient patient-id])
-    (fn []
-      (if (= 404 @error-code)
-        [not-found/root "Patient Not Found" "This patient doesn't exist in our records!"]
-        [:section {:class ["flex" "flex-col"]}
-         (cond
-           @loading? [components/spinner {:class ["block" "self-center" "w-8" "h-8" "m-16" "text-blue-600"]}]
-           @error-code [components/danger-alert "There was an error while fetching patient data. Please try again!"]
-           @patient [:table {:class ["table-auto" "self-center"]}
-                     [:tbody
-                      [row
-                       [cell {:class ["text-gray-500"]} "Name"]
-                       [cell  (:first-name @patient) " " (:last-name @patient)]]
-                      [row
-                       [cell {:class ["text-gray-500"]} "Date of Birth"]
-                       [cell (:birth-date @patient)]]
-                      [row
-                       [cell {:class ["text-gray-500"]} "Gender"]
-                       [cell {:class ["capitalize"]} (:gender @patient)]]
-                      [row
-                       [cell {:class ["text-gray-500"]} "Phone"]
-                       [cell (:phone @patient)]]
-                      [row
-                       [cell {:class ["text-gray-500"]} "Email"]
-                       [cell (:email @patient)]]
-                      [row
-                       [cell {:class ["text-gray-500"]} "Marital Status"]
-                       [cell (marital-status-text (:marital-status @patient))]]]])]))))
+    [:section {:class ["flex" "flex-col"]}
+     (cond
+       loading? [components/spinner {:class ["block" "self-center" "w-8" "h-8" "m-16" "text-blue-600"]}]
+       (= 404 error-code) [not-found/root {:title "Patient Not Found"
+                                           :message "This patient doesn't exist in our records!"}]
+       error-code [components/danger-alert "There was an error while fetching patient data. Please try again!"]
+       patient [:table {:class ["table-auto" "self-center"]}
+                [:tbody
+                 [row
+                  [cell {:class ["text-gray-500"]} "Name"]
+                  [cell (:first-name patient) " " (:last-name patient)]]
+                 [row
+                  [cell {:class ["text-gray-500"]} "Date of Birth"]
+                  [cell (:birth-date patient)]]
+                 [row
+                  [cell {:class ["text-gray-500"]} "Gender"]
+                  [cell {:class ["capitalize"]} (:gender patient)]]
+                 [row
+                  [cell {:class ["text-gray-500"]} "Phone"]
+                  [cell (:phone patient)]]
+                 [row
+                  [cell {:class ["text-gray-500"]} "Email"]
+                  [cell (:email patient)]]
+                 [row
+                  [cell {:class ["text-gray-500"]} "Marital Status"]
+                  [cell (marital-status-text (:marital-status patient))]]]])]))

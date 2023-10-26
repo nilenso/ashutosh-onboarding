@@ -16,7 +16,7 @@
                           "w-full max-w-4xl"
                           "mx-auto p-8 md:p-12"]}
            [:header {:class ["flex" "flex-row" "gap-12"]}
-            [heading-1 "Acme Orthopedic Clinic"]
+            [:a {:href "/"} [heading-1 "Acme Orthopedic Clinic"]]
             (when logout-enabled
               [:<>
                [:div {:class "flex-grow"}]

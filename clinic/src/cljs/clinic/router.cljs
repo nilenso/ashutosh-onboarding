@@ -1,16 +1,22 @@
 (ns clinic.router
   (:require [bidi.bidi :as bidi]
+            [clinic.utils :as u]
             [pushy.core :as pushy]
             [re-frame.core :as rf]))
 
 (def ^:private routes
-  ["/" {"" ::home
-        "patients/" {"new" ::create-patient
-                     [:id] ::view-patient}}])
+  ["" {"/" ::home
+       "/patients" {"/new" ::create-patient
+                    ["/" :id] ::view-patient
+                    "" ::list-patients}}])
 
 (def ^:private history
-  (pushy/pushy #(rf/dispatch [::set-current-view (:handler %) (:route-params %)])
-               (partial bidi/match-route routes)))
+  (pushy/pushy #(rf/dispatch [::set-current-view
+                              (:handler %)
+                              (merge (:route-params %)
+                                     (:query-params %))])
+               #(-> (bidi/match-route routes %)
+                    (assoc :query-params (u/query-params %)))))
 
 (defn start! []
   (pushy/start! history))
