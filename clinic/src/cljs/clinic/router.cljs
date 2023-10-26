@@ -9,7 +9,7 @@
                      [:id] ::view-patient}}])
 
 (def ^:private history
-  (pushy/pushy #(rf/dispatch [::set-current-view (:handler %)])
+  (pushy/pushy #(rf/dispatch [::set-current-view (:handler %) (:route-params %)])
                (partial bidi/match-route routes)))
 
 (defn start! []

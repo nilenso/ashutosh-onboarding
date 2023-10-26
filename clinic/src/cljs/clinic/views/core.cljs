@@ -5,33 +5,37 @@
             [clinic.views.create-patient :as create-patient]
             [clinic.views.home :as home]
             [clinic.views.not-found :as not-found]
+            [clinic.views.view-patient :as view-patient]
             [re-frame.core :as rf]))
 
 (def ^:private views {::router/home home/root
-                      ::router/create-patient create-patient/root})
+                      ::router/create-patient create-patient/root
+                      ::router/view-patient view-patient/root})
 
 (def ^:private titles {::router/home "Home"
-                       ::router/create-patient "Add Patient"})
+                       ::router/create-patient "Add Patient"
+                       ::router/view-patient "Patient Info"})
 
 (rf/reg-fx ::set-window-title
-           (fn [view-id]
+           (fn [title]
              (set! (.-title js/document)
-                   (-> titles
-                       (get view-id "Page Not Found")
+                   (-> title
+                       (or "Page Not Found")
                        (str " - Acme Clinic")))))
 
 (rf/reg-event-fx ::router/set-current-view
-                 (fn [{db :db} [_ view-id]]
-                   {:db (assoc db ::current-view-id view-id)
-                    ::set-window-title view-id}))
+                 (fn [{db :db} [_ view-id params]]
+                   {:db (assoc db ::current-view {::id view-id ::params params})
+                    ::set-window-title (titles view-id)}))
 
-(rf/reg-sub ::current-view-id :-> ::current-view-id)
+(rf/reg-sub ::current-view :-> ::current-view)
 
 (defn root []
   (let [current-role (user-role/get)
-        current-view (rf/subscribe [::current-view-id])]
+        current-view (rf/subscribe [::current-view])]
     (fn []
       [components/page {:logout-enabled @current-role
                         :on-logout-click #(do (user-role/clear)
                                               (router/replace-token! "/"))}
-       [(get views @current-view not-found/root)]])))
+       [(get views (::id @current-view) not-found/root)
+        (::params @current-view)]])))
