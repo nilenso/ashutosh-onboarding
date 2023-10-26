@@ -31,7 +31,8 @@
 
 (defn- patient-row []
   (let [{:keys [index patient]} (r/props (r/current-component))]
-    [:tr {:class ["hover:bg-gray-100" "hover:cursor-pointer"]
+    [:tr {:class [(if (odd? index) "bg-gray-50" "bg-white")
+                  "hover:bg-gray-100" "hover:cursor-pointer"]
           :on-click #(router/set-token! (str "/patients/" (:id patient)))}
      [:td {:class ["px-6" "py-2"]} (inc index)]
      [:td {:class ["px-6" "py-2"]} (:first-name patient) " " (:last-name patient)]
@@ -47,6 +48,25 @@
         error-code (rf/subscribe [::patients phone page ::error-code])]
     (rf/dispatch [::fetch-patients phone page])
     [:section {:class ["flex" "flex-col" "gap-8"]}
+     [:div {:class ["flex" "flex-row" "self-center" "items-center" "gap-6"]}
+      [:input {:id "phone"
+               :name "phone"
+               :placeholder "Search by phone"
+               :defaultValue phone
+               :class ["appearance-none" "block" "w-full" "bg-gray-200"
+                       "text-gray-700" "border" "border-gray-200"
+                       "rounded" "py-2.5" "px-4" "leading-tight"
+                       "focus:outline-none" "focus:bg-white"
+                       "focus:border-gray-500"]}]
+      [:button {:class ["bg-blue-600" "hover:bg-blue-800" "text-white"
+                        "font-bold" "py-2" "px-4" "rounded-full"]
+                :on-click #(-> js/document
+                               (.getElementById "phone")
+                               (.-value)
+                               ((partial str "/patients?phone="))
+                               (router/set-token!))}
+       "Search"]]
+
      (cond
        @loading?
        [components/spinner {:class ["block" "self-center" "w-8" "h-8" "m-16" "text-blue-600"]}]
@@ -59,7 +79,7 @@
 
        @patients
        [:<>
-        [:table {:class ["table-auto" "self-center" "text-center"]}
+        [:table {:class ["w-full" "table-auto" "self-center" "text-center"]}
          [:thead
           [:tr {:class ["border-b"]}
            [:th {:class ["px-6" "py-2"]} "#"]

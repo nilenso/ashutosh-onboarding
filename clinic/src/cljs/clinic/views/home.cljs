@@ -17,7 +17,7 @@
          [:option {:value "doctor"} "Doctor"]
          [:option {:value "nurse"} "Nurse"]
          [:option {:value "patient"} "Patient"]]
-        [:button {:class ["bg-blue-500" "hover:bg-blue-700" "text-white"
+        [:button {:class ["bg-blue-600" "hover:bg-blue-800" "text-white"
                           "font-bold" "py-2" "px-4" "rounded-full"]
                   :on-click #(-> @!select
                                  (.-value)
@@ -34,7 +34,7 @@
      [components/heading-2 "Operations"]
      [:ol {:class ["list-decimal" "list-inside"]}
       [list-item "Add patient" "/patients/new"]
-      [list-item "List Patients" "/patients"]]]))
+      [list-item "Search Patients" "/patients"]]]))
 
 (defn root []
   (let [current-role (user-role/get)]

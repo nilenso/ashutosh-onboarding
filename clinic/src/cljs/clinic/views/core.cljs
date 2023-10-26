@@ -12,12 +12,12 @@
 (def ^:private views {::router/home home/root
                       ::router/create-patient create-patient/root
                       ::router/view-patient view-patient/root
-                      ::router/list-patients list-patients/root})
+                      ::router/search-patients list-patients/root})
 
 (def ^:private titles {::router/home "Home"
                        ::router/create-patient "Add Patient"
                        ::router/view-patient "Patient Info"
-                       ::router/list-patients "Patients"})
+                       ::router/search-patients "Search Patients"})
 
 (rf/reg-fx ::set-window-title
            (fn [title]

@@ -8,7 +8,7 @@
   ["" {"/" ::home
        "/patients" {"/new" ::create-patient
                     ["/" :id] ::view-patient
-                    "" ::list-patients}}])
+                    "" ::search-patients}}])
 
 (def ^:private history
   (pushy/pushy #(rf/dispatch [::set-current-view
