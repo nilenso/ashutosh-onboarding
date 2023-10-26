@@ -8,29 +8,28 @@
             [re-frame.core :as rf]
             [reagent.core :as r]))
 
-(rf/reg-event-fx ::submit-form-success
+(rf/reg-event-fx ::submit-form-data-success
                  (fn [{db :db} [_ result]]
-                   {:db (assoc db ::submitting-form false)
+                   {:db (assoc db ::submit-form {::loading false})
                     ::router/set-token (str "/patients/" (result :id))}))
 
-(rf/reg-event-db ::submit-form-failure
-                 (fn [db [_ result]]
-                   (into db {::submitting-form false
-                             ::submit-form-error-code (result :status)})))
+(rf/reg-event-db ::submit-form-data-failure
+                 (fn [db [_ {error-code :status}]]
+                   (assoc db ::submit-form {::loading false
+                                            ::error-code error-code})))
 
-(rf/reg-event-fx ::submit-form
+(rf/reg-event-fx ::submit-form-data
                  (fn [{db :db} [_ form-data]]
-                   {:db (assoc db ::submitting-form true)
+                   {:db (assoc-in db [::submit-form ::loading] true)
                     :http-xhrio {:method :post
                                  :uri "/api/v1/patients/"
                                  :params form-data
                                  :format (ajax/json-request-format)
                                  :response-format (ajax/json-response-format {:keywords? true})
-                                 :on-success [::submit-form-success]
-                                 :on-failure [::submit-form-failure]}}))
+                                 :on-success [::submit-form-data-success]
+                                 :on-failure [::submit-form-data-failure]}}))
 
-(rf/reg-sub ::submitting-form :-> ::submitting-form)
-(rf/reg-sub ::submit-form-error-code :-> ::submit-form-error-code)
+(rf/reg-sub ::submit-form get-in)
 
 (defn form-data [form]
   (-> form
@@ -46,9 +45,10 @@
   (let [form-ref (atom nil)
         touched? (r/atom #{})
         invalid? (r/atom #{})
-        submitting? (rf/subscribe [::submitting-form])
-        submit-error-code (rf/subscribe [::submit-form-error-code])]
+        loading? (rf/subscribe [::submit-form ::loading])
+        error-code (rf/subscribe [::submit-form ::error-code])]
     (fn []
+      (prn @loading? @error-code)
       [:section {:class ["flex" "flex-col" "gap-12"]}
        [components/heading-2 "Add a Patient"]
        [:form {:ref (partial reset! form-ref)
@@ -71,11 +71,11 @@
                                  (reset! touched? (set (keys form-data)))
                                  (reset! invalid? (find-invalid-keys @form-ref))
                                  (when (empty? @invalid?)
-                                   (rf/dispatch [::submit-form form-data]))))}
+                                   (rf/dispatch [::submit-form-data form-data]))))}
 
-        (when @submit-error-code
+        (when @error-code
           [components/danger-alert
-           (case @submit-error-code
+           (case @error-code
              400 "Something doesn't seem right. Are you sure the form input is
                   correct?"
              "There was an error while adding patient. Please try again!")])
@@ -137,4 +137,4 @@
         [:div {:class ["h-4"]}]
         [components/button {:type "submit"
                             :text "Add Patient"
-                            :loading? @submitting?}]]])))
+                            :loading? @loading?}]]])))
