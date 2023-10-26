@@ -1,11 +1,13 @@
 (ns clinic.components
   (:require [reagent.core :as r]))
 
-(defn heading-1 [text]
-  [:h1 {:class "text-3xl md:text-4xl"} text])
+(defn heading-1 []
+  (into [:h1 {:class "text-3xl md:text-4xl"}]
+        (r/children (r/current-component))))
 
-(defn heading-2 [text]
-  [:h2 {:class ["text-xl" "md:text-2xl"]} text])
+(defn heading-2 []
+  (into [:h2 {:class ["text-xl" "md:text-2xl"]}]
+        (r/children (r/current-component))))
 
 (defn page []
   (let [this (r/current-component)
@@ -29,12 +31,12 @@
           (r/children this))))
 
 (defn text-field []
-  (let [{name :name
-         label :label
-         placeholder :placeholder
-         error-msg :error-msg
-         touched? :touched?
-         invalid? :invalid?} (r/props (r/current-component))]
+  (let [{:keys [name
+                label
+                placeholder
+                error-msg
+                touched?
+                invalid?]} (r/props (r/current-component))]
     [:div {:class ["w-full" "flex" "flex-col" "gap-2"]}
      [:label {:for name
               :class ["block" "uppercase" "tracking-wide" "text-gray-600"
@@ -53,43 +55,45 @@
                   "text-red-500" "text-xs" "italic"]}
       error-msg]]))
 
-(defn select-field [name label default-value options]
-  [:div {:class ["w-full" "flex" "flex-col" "gap-2"]}
-   [:label {:for name
-            :class ["block" "uppercase" "tracking-wide" "text-gray-600"
-                    "text-xs" "font-bold"]}
-    label]
-   [:div {:class ["relative"]}
-    (into [:select {:id name
-                    :name name
-                    :defaultValue default-value
-                    :class ["appearance-none" "block" "w-full" "bg-gray-200"
-                            "text-gray-700" "border" "border-gray-200"
-                            "rounded" "py-3" "px-4" "pr-8" "leading-tight"
-                            "focus:outline-none" "focus:bg-white"
-                            "focus:border-gray-500"]}]
-          (for [[name value] options]
-            [:option {:value value} name]))
-    [:div
-     {:class ["pointer-events-none" "absolute" "inset-y-0" "right-0" "flex"
-              "items-center" "px-2" "text-gray-700"]}
-     [:svg
-      {:class "fill-current h-4 w-4",
-       :xmlns "http://www.w3.org/2000/svg",
-       :viewBox "0 0 20 20"}
-      [:path
-       {:d "M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"}]]]]])
+(defn select-field []
+  (let [{:keys [name
+                label
+                default-value
+                options]} (r/props (r/current-component))]
+    [:div {:class ["w-full" "flex" "flex-col" "gap-2"]}
+     [:label {:for name
+              :class ["block" "uppercase" "tracking-wide" "text-gray-600"
+                      "text-xs" "font-bold"]}
+      label]
+     [:div {:class ["relative"]}
+      (into [:select {:id name
+                      :name name
+                      :defaultValue default-value
+                      :class ["appearance-none" "block" "w-full" "bg-gray-200"
+                              "text-gray-700" "border" "border-gray-200"
+                              "rounded" "py-3" "px-4" "pr-8" "leading-tight"
+                              "focus:outline-none" "focus:bg-white"
+                              "focus:border-gray-500"]}]
+            (for [[name value] options]
+              [:option {:value value} name]))
+      [:div
+       {:class ["pointer-events-none" "absolute" "inset-y-0" "right-0" "flex"
+                "items-center" "px-2" "text-gray-700"]}
+       [:svg
+        {:class "fill-current h-4 w-4",
+         :xmlns "http://www.w3.org/2000/svg",
+         :viewBox "0 0 20 20"}
+        [:path
+         {:d "M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"}]]]]]))
 
 (defn spinner []
   (let [props (r/props (r/current-component))]
-    [:svg
-     {:class (into ["animate-spin"]
-                   (props :class))
-      :aria-hidden "true"
-      :role "status"
-      :viewBox "0 0 100 101"
-      :fill "none"
-      :xmlns "http://www.w3.org/2000/svg"}
+    [:svg {:class (into ["animate-spin"] (:class props))
+           :aria-hidden "true"
+           :role "status"
+           :viewBox "0 0 100 101"
+           :fill "none"
+           :xmlns "http://www.w3.org/2000/svg"}
      [:path
       {:d "M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0
             78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082
@@ -111,19 +115,21 @@
             39.6781 93.9676 39.0409Z"
        :fill "currentColor"}]]))
 
-(defn button [type text loading?]
-  [:button
-   {:disabled loading?
-    :type type
-    :class [(if loading? "bg-blue-400" "bg-blue-600")
-            (if loading? "hover:bg-blue-400" "hover:bg-blue-800")
-            "text-white" "font-medium" "py-2" "px-4" "rounded-full"
-            "focus:ring-4" "focus:outline-none" "focus:ring-blue-300"
-            "rounded-full" "text-md" "text-center" "dark:bg-blue-600"
-            "dark:hover:bg-blue-700" "dark:focus:ring-blue-800"
-            "inline-flex" "items-center" "justify-center"]}
-   [spinner {:class ["inline" "w-6" "h-6" "-ml-9" "mr-3" "text-white"]}]
-   text])
+(defn button []
+  (let [{:keys [type text loading?]} (r/props (r/current-component))]
+    [:button
+     {:disabled loading?
+      :type type
+      :class [(if loading? "bg-blue-400" "bg-blue-600")
+              (if loading? "hover:bg-blue-400" "hover:bg-blue-800")
+              "text-white" "font-medium" "py-2" "px-4" "rounded-full"
+              "focus:ring-4" "focus:outline-none" "focus:ring-blue-300"
+              "rounded-full" "text-md" "text-center" "dark:bg-blue-600"
+              "dark:hover:bg-blue-700" "dark:focus:ring-blue-800"
+              "inline-flex" "items-center" "justify-center"]}
+     [spinner {:class [(if loading? "visible" "invisible")
+                       "inline" "w-6" "h-6" "-ml-9" "mr-3" "text-white"]}]
+     text]))
 
 (defn danger-alert []
   (into [:div

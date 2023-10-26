@@ -103,14 +103,13 @@
                                  :touched? (contains? @touched? :birth-date)
                                  :invalid? (contains? @invalid? :birth-date)}]
 
-         [components/select-field
-          :gender
-          "Gender *"
-          "unknown"
-          [["Male" "male"]
-           ["Female" "female"]
-           ["Other" "other"]
-           ["Unknown" "unknown"]]]]
+         [components/select-field {:name :gender
+                                   :label "Gender *"
+                                   :default-value "unknown"
+                                   :options [["Male" "male"]
+                                             ["Female" "female"]
+                                             ["Other" "other"]
+                                             ["Unknown" "unknown"]]}]]
 
         [components/text-field {:name :phone
                                 :label "Phone *"
@@ -126,15 +125,16 @@
                                 :touched? (contains? @touched? :email)
                                 :invalid? (contains? @invalid? :email)}]
 
-        [components/select-field
-         :marital-status
-         "Marital Status"
-         "UNK"
-         [["Single" "S"]
-          ["Divorced" "D"]
-          ["Married" "M"]
-          ["Widowed" "W"]
-          ["Unknown" "UNK"]]]
+        [components/select-field {:name :marital-status
+                                  :label "Marital Status"
+                                  :default-value "UNK"
+                                  :options [["Single" "S"]
+                                            ["Divorced" "D"]
+                                            ["Married" "M"]
+                                            ["Widowed" "W"]
+                                            ["Unknown" "UNK"]]}]
 
         [:div {:class ["h-4"]}]
-        [components/button "submit" "Add Patient" @submitting?]]])))
+        [components/button {:type "submit"
+                            :text "Add Patient"
+                            :loading? @submitting?}]]])))

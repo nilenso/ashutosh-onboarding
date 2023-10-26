@@ -29,13 +29,14 @@
 
 (rf/reg-sub ::patients get-in)
 
-(defn- patient-row [index patient]
-  [:tr {:class ["hover:bg-gray-100" "hover:cursor-pointer"]
-        :on-click #(router/set-token! (str "/patients/" (:id patient)))}
-   [:td {:class ["px-6" "py-2"]} (inc index)]
-   [:td {:class ["px-6" "py-2"]} (:first-name patient) " " (:last-name patient)]
-   [:td {:class ["px-6" "py-2"]} (:birth-date patient)]
-   [:td {:class ["px-6" "py-2"]} (:phone patient)]])
+(defn- patient-row []
+  (let [{:keys [index patient]} (r/props (r/current-component))]
+    [:tr {:class ["hover:bg-gray-100" "hover:cursor-pointer"]
+          :on-click #(router/set-token! (str "/patients/" (:id patient)))}
+     [:td {:class ["px-6" "py-2"]} (inc index)]
+     [:td {:class ["px-6" "py-2"]} (:first-name patient) " " (:last-name patient)]
+     [:td {:class ["px-6" "py-2"]} (:birth-date patient)]
+     [:td {:class ["px-6" "py-2"]} (:phone patient)]]))
 
 (defn root []
   (let [props (r/props (r/current-component))
@@ -65,7 +66,9 @@
            [:th {:class ["px-6" "py-2"]} "Name"]
            [:th {:class ["px-6" "py-2"]} "Date of Birth"]
            [:th {:class ["px-6" "py-2"]} "Phone Number"]]]
-         (into [:tbody] (map-indexed patient-row @patients))]
+         (into [:tbody] (map-indexed #(do [patient-row {:index %1
+                                                        :patient %2}])
+                                     @patients))]
         [:div {:class ["flex" "flex-row" "justify-center" "gap-8"]}
          [:a {:class ["text-blue-600" "hover:underline"
                       (when (<= page 1) "invisible")]
