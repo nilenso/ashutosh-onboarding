@@ -1,6 +1,6 @@
 (ns clinic.routes.patient
   (:require [clinic.service.patient :as svc]
-            [compojure.core :refer [defroutes POST]]
+            [compojure.core :refer [defroutes GET POST]]
             [ring.util.response :as r]))
 
 (defn- create-patient! [{{fhir-server-url :fhir-server-base-url} :config
@@ -19,5 +19,34 @@
           :invalid-params (r/status 400)
           (throw e))))))
 
+(defn- list-patients [{{fhir-server-url :fhir-server-base-url} :config
+                       {:keys [phone offset count]} :params}]
+  (try
+    ;; `params` in request contains form + query params. Therefore, destructure
+    ;; only what is needed.
+    (-> (svc/get-all fhir-server-url {:phone phone
+                                      :offset offset
+                                      :count count})
+        (r/response)
+        (r/status 200))
+    (catch Exception e
+      (case (:type (ex-data e))
+        :invalid-params (r/status 400)
+        (throw e)))))
+
+(defn- get-patient [{{fhir-server-url :fhir-server-base-url} :config
+                     {:keys [id]} :params}]
+  (try
+    (-> (svc/get-by-id fhir-server-url id)
+        (r/response)
+        (r/status 200))
+    (catch Exception e
+      (case (:type (ex-data e))
+        :invalid-params (r/status 400)
+        :patient-not-found (r/status 404)
+        (throw e)))))
+
 (defroutes handler
-  (POST "/" _ create-patient!))
+  (POST "/" _ create-patient!)
+  (GET "/" _ list-patients)
+  (GET "/:id" _ get-patient))

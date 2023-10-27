@@ -2,6 +2,7 @@
   (:require [clinic.fhir.client :as fc]
             [clinic.fhir.utils :as fu]
             [clinic.specs.patient :as specs]
+            [clinic.utils :as u]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]))
 
@@ -54,12 +55,66 @@
     (throw (ex-info "invalid create params"
                     {:type :invalid-params
                      :details (s/explain-data ::specs/create-params params)})))
-  (let [{status :status
-         body   :body} (fc/create! fhir-server-url
-                                   (domain->fhir params)
-                                   nil)]
+  (let [{:keys [status body]} (fc/create! fhir-server-url
+                                          (-> params
+                                              ;; ignore phone number formatting
+                                              ;; characters and only keep its
+                                              ;; digits.
+                                              (update :phone u/extract-digits)
+                                              (domain->fhir))
+                                          nil)]
     (cond
       (= status 201) (fhir->domain body)
+      :else (throw (ex-info "upstream service error"
+                            {:type :upstream-error
+                             :response {:status status :body body}})))))
+
+(defn get-all
+  "Lists patient resources from a FHIR server at the given `fhir-server-url` and
+   uses the given `params` to apply filters to the search.
+
+   The accepted `params` are:
+   - `:phone` (optional): The phone number of the Patient.
+   - `:offset` (optional, default 0): The number of Patient resources to skip in
+     the result set.
+   - `:count` (optional, default 10): The maximum count of Patient resources to
+     return with the result.
+   "
+  [fhir-server-url params]
+  (when-not (s/valid? ::specs/get-all-params params)
+    (throw (ex-info "invalid get-all params"
+                    {:type :invalid-params
+                     :details (s/explain-data ::specs/get-all-params params)})))
+  (let [{:keys [phone offset count]} params
+        query-params (cond-> {:_offset "0"
+                              :_count "10"}
+                       phone (assoc :phone (u/extract-digits phone))
+                       offset (assoc :_offset offset)
+                       count (assoc :_count count))
+        {:keys [status body]} (fc/get-all fhir-server-url "Patient" query-params)]
+    (cond
+      (= status 200) (->> body
+                          (:entry)
+                          (map :resource)
+                          (map fhir->domain))
+      :else (throw (ex-info "upstream service error"
+                            {:type :upstream-error
+                             :response {:status status :body body}})))))
+
+(defn get-by-id
+  "Gets a Patient resource by its `id` from a FHIR server at the given
+   `fhir-server-url`."
+  [fhir-server-url id]
+  (when-not (s/valid? ::specs/id id)
+    (throw (ex-info "invalid `id` path param"
+                    {:type :invalid-params
+                     :details (s/explain-data ::specs/id id)})))
+  (let [{:keys [status body]} (fc/get-by-id fhir-server-url "Patient" id)]
+    (cond
+      (= status 200) (fhir->domain body)
+      (= status 404) (throw (ex-info "patient not found"
+                                     {:type :patient-not-found
+                                      :patient-id id}))
       :else (throw (ex-info "upstream service error"
                             {:type :upstream-error
                              :response {:status status :body body}})))))

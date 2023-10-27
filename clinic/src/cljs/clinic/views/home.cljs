@@ -1,5 +1,6 @@
 (ns clinic.views.home
   (:require [clinic.components :as components]
+            [clinic.router :as router]
             [clinic.user-role.core :as user-role]))
 
 (defn- role-selector []
@@ -17,7 +18,7 @@
          [:option {:value "doctor"} "Doctor"]
          [:option {:value "nurse"} "Nurse"]
          [:option {:value "patient"} "Patient"]]
-        [:button {:class ["bg-blue-500" "hover:bg-blue-700" "text-white"
+        [:button {:class ["bg-blue-600" "hover:bg-blue-800" "text-white"
                           "font-bold" "py-2" "px-4" "rounded-full"]
                   :on-click #(-> @!select
                                  (.-value)
@@ -26,18 +27,18 @@
 
 (defn- nurse-fn-list []
   (let [list-item #(vector :li
-                           [:a {:href %2
+                           [:a {:href (router/path-for %2)
                                 :class ["text-blue-600" "hover:underline"]}
                             %1])]
 
-    [:section {:class ["flex" "flex-col" "gap-8"]}
+    [:section {:class ["flex" "flex-col" "gap-12" "items-center"]}
      [components/heading-2 "Operations"]
-     [:ol {:class ["list-decimal" "list-inside"]}
-      [list-item "Add patient" "/patients/new"]]]))
+     [:ol {:class ["list-decimal" "list-inside" "self-start"]}
+      [list-item "Add patient" ::router/create-patient]
+      [list-item "Search Patients" ::router/search-patients]]]))
 
 (defn root []
-  (let [current-role (user-role/get)]
-    (fn []
-      (case @current-role
-        "nurse" [nurse-fn-list]
-        [role-selector]))))
+  (let [current-role @(user-role/get)]
+    (case current-role
+      "nurse" [nurse-fn-list]
+      [role-selector])))

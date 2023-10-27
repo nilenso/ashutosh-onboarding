@@ -3,6 +3,14 @@
             [clojure.string :as string]))
 
 (def ^:private not-blank? (complement string/blank?))
+(def ^:private int-string? (partial re-matches #"\d+"))
+
+(defn phone-number? [v]
+  ;; Not strictly checking the input sequence for digits and allowing room for
+  ;; phone number formatting characters. Taking the number of digits in a phone
+  ;; number from the E.164 standard. https://en.wikipedia.org/wiki/E.164
+  (and (re-matches #"\+?[\d-()x\[\]\. ]+" v)
+       (<= 8 (count (re-seq #"\d" v)) 15)))
 
 (defn- date? [v]
   #?(:clj (try (java.time.LocalDate/parse v)
@@ -19,12 +27,17 @@
 (s/def ::gender #{"male" "female" "other" "unknown"})
 (s/def ::marital-status (s/nilable #{"A" "D" "I" "L" "M" "P" "S" "T" "U" "W" "UNK"}))
 (s/def ::email (s/nilable (s/and string? not-blank?)))
-(s/def ::phone (s/nilable (s/and string? not-blank?)))
+(s/def ::phone (s/nilable (s/and string? phone-number?)))
+(s/def ::offset (s/nilable int-string?))
+(s/def ::count (s/nilable (s/and int-string? #(<= 1 (parse-long %) 20))))
 
 (s/def ::create-params
-  (s/keys :req-un [::first-name ::last-name ::birth-date ::gender]
-          :opt-un [::marital-status ::email ::phone]))
+  (s/keys :req-un [::first-name ::last-name ::birth-date ::gender ::phone]
+          :opt-un [::marital-status ::email]))
 
 (s/def ::patient
-  (s/keys :req-un [::id ::first-name ::last-name ::birth-date ::gender]
-          :opt-un [::marital-status ::email ::phone]))
+  (s/keys :req-un [::id ::first-name ::last-name ::birth-date ::gender ::phone]
+          :opt-un [::marital-status ::email]))
+
+(s/def ::get-all-params
+  (s/keys :opt-un [::offset ::count ::phone]))
