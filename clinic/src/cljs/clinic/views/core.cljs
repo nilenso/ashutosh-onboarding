@@ -9,16 +9,6 @@
             [clinic.views.view-patient :as view-patient]
             [re-frame.core :as rf]))
 
-(def ^:private views {::router/home home/root
-                      ::router/create-patient create-patient/root
-                      ::router/view-patient view-patient/root
-                      ::router/search-patients list-patients/root})
-
-(def ^:private titles {::router/home "Home"
-                       ::router/create-patient "Add Patient"
-                       ::router/view-patient "Patient Info"
-                       ::router/search-patients "Search Patients"})
-
 (rf/reg-fx ::set-window-title
            (fn [title]
              (set! (.-title js/document)
@@ -26,19 +16,29 @@
                        (or "Page Not Found")
                        (str " - Acme Clinic")))))
 
-(rf/reg-event-fx ::router/set-current-view
-                 (fn [{db :db} [_ view-id params]]
-                   {:db (assoc db ::current-view {::id view-id ::params params})
-                    ::set-window-title (titles view-id)}))
-
-(rf/reg-sub ::current-view :-> ::current-view)
+(rf/reg-event-fx ::router/on-current-view-changed
+                 (fn [{db :db} _]
+                   (let [{view-id ::router/id
+                          params ::router/params} (::router/current-view db)]
+                     (case view-id
+                       ::router/home {::set-window-title "Home"}
+                       ::router/create-patient {::set-window-title "Add Patient"}
+                       ::router/view-patient {::set-window-title "Patient Info"
+                                              :dispatch [::view-patient/fetch-patient params]}
+                       ::router/search-patients {::set-window-title "Search Patients"
+                                                 :dispatch [::list-patients/fetch-patients params]}))))
 
 (defn root []
-  (let [current-role (user-role/get)
-        current-view (rf/subscribe [::current-view])]
-    (fn []
-      [components/page {:logout-enabled @current-role
-                        :on-logout-click #(do (user-role/clear)
-                                              (router/replace-token! "/"))}
-       [(get views (::id @current-view) not-found/root)
-        (::params @current-view)]])))
+  (let [current-role @(user-role/get)
+        current-view-id @(rf/subscribe [::router/current-view ::router/id])]
+    [components/page {:title-href (router/path-for ::router/home)
+                      :logout-enabled current-role
+                      :on-logout-click #(do (user-role/clear)
+                                            (rf/dispatch [::router/replace-token
+                                                          (router/path-for ::router/home)]))}
+     [(case current-view-id
+        ::router/home home/root
+        ::router/create-patient create-patient/root
+        ::router/view-patient view-patient/root
+        ::router/search-patients list-patients/root
+        not-found/root)]]))

@@ -11,7 +11,7 @@
 (rf/reg-event-fx ::submit-form-data-success
                  (fn [{db :db} [_ result]]
                    {:db (assoc db ::submit-form {::loading false})
-                    ::router/set-token (str "/patients/" (result :id))}))
+                    ::router/set-token (router/path-for ::router/view-patient :id (result :id))}))
 
 (rf/reg-event-db ::submit-form-data-failure
                  (fn [db [_ {error-code :status}]]
@@ -48,12 +48,10 @@
         loading? (rf/subscribe [::submit-form ::loading])
         error-code (rf/subscribe [::submit-form ::error-code])]
     (fn []
-      (prn @loading? @error-code)
       [:section {:class ["flex" "flex-col" "gap-12"]}
        [components/heading-2 "Add a Patient"]
        [:form {:ref (partial reset! form-ref)
                :method "POST"
-               :action "/api/v1/patients/"
                :class ["w-full" "flex" "flex-col" "gap-4"]
                :on-blur #(do (swap! touched? conj (-> %
                                                       (.-target)

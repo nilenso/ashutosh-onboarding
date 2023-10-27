@@ -1,5 +1,6 @@
 (ns clinic.utils
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.spec.alpha :as s]
+            [clojure.string :as string]))
 
 (defn form-data->map
   "Converts DOM FormData to a Clojure map. Also keywordizes keys in the
@@ -27,7 +28,18 @@
 (defn query-params
   "Returns a keywordized map of query parameters in the given `url`."
   [url]
-  (->> (js/URL. url "http://dummy")
+  (->> (js/URL. url
+                (-> js/window
+                    (.-location)
+                    (.-origin)))
        (.-searchParams)
        (map (fn [[k v]] [(keyword k) v]))
        (into {})))
+
+(defn url [path query-params]
+  (->> query-params
+       (map #(str (-> % (first) (name))
+                  "="
+                  (-> % (second) (js/encodeURIComponent))))
+       (string/join "&")
+       (str path "?")))

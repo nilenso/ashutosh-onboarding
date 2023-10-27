@@ -7,27 +7,21 @@
 
 
 (rf/reg-event-db ::fetch-patient-success
-                 (fn [db [_ patient-id result]]
-                   (assoc-in db
-                             [::patient patient-id]
-                             {::loading false
-                              ::data result})))
+                 (fn [db [_ result]]
+                   (assoc db ::patient {::loading false ::data result})))
 
 (rf/reg-event-db ::fetch-patient-failure
-                 (fn [db [_ patient-id {error-code :status}]]
-                   (assoc-in db
-                             [::patient patient-id]
-                             {::loading false
-                              ::error-code error-code})))
+                 (fn [db [_ {error-code :status}]]
+                   (assoc db ::patient {::loading false ::error-code error-code})))
 
 (rf/reg-event-fx ::fetch-patient
-                 (fn [{db :db} [_ patient-id]]
+                 (fn [{db :db} [_ {patient-id :id}]]
                    {:db (assoc-in db [::patient patient-id] {::loading true})
                     :http-xhrio {:method :get
                                  :uri (str "/api/v1/patients/" patient-id)
                                  :response-format (ajax/json-response-format {:keywords? true})
-                                 :on-success [::fetch-patient-success patient-id]
-                                 :on-failure [::fetch-patient-failure patient-id]}}))
+                                 :on-success [::fetch-patient-success]
+                                 :on-failure [::fetch-patient-failure]}}))
 
 (rf/reg-sub ::patient get-in)
 
@@ -57,13 +51,9 @@
     "Unknown"))
 
 (defn root []
-  (let [patient-id (-> (r/current-component)
-                       (r/props)
-                       (:id))
-        loading? @(rf/subscribe [::patient patient-id ::loading])
-        patient @(rf/subscribe [::patient patient-id ::data])
-        error-code @(rf/subscribe [::patient patient-id ::error-code])]
-    (rf/dispatch [::fetch-patient patient-id])
+  (let [loading? @(rf/subscribe [::patient ::loading])
+        patient @(rf/subscribe [::patient ::data])
+        error-code @(rf/subscribe [::patient ::error-code])]
     [:section {:class ["flex" "flex-col"]}
      (cond
        loading? [components/spinner {:class ["block" "self-center" "w-8" "h-8" "m-16" "text-blue-600"]}]

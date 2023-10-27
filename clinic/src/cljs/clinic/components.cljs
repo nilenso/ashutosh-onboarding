@@ -12,13 +12,14 @@
 (defn page []
   (let [this (r/current-component)
         props (r/props this)
-        logout-enabled (props :logout-enabled)
-        logout-handler (props :on-logout-click #())]
+        title-href (:title-href props)
+        logout-enabled (:logout-enabled props)
+        logout-handler (get props :on-logout-click #())]
     (into [:main {:class ["flex" "flex-col gap-12 md:gap-16"
                           "w-full max-w-4xl"
                           "mx-auto p-8 md:p-12"]}
            [:header {:class ["flex" "flex-row" "gap-12"]}
-            [:a {:href "/"} [heading-1 "Acme Orthopedic Clinic"]]
+            [:a {:href title-href} [heading-1 "Acme Orthopedic Clinic"]]
             (when logout-enabled
               [:<>
                [:div {:class "flex-grow"}]
