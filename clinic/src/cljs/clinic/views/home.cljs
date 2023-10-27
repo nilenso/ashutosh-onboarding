@@ -31,15 +31,14 @@
                                 :class ["text-blue-600" "hover:underline"]}
                             %1])]
 
-    [:section {:class ["flex" "flex-col" "gap-8"]}
+    [:section {:class ["flex" "flex-col" "gap-12" "items-center"]}
      [components/heading-2 "Operations"]
-     [:ol {:class ["list-decimal" "list-inside"]}
+     [:ol {:class ["list-decimal" "list-inside" "self-start"]}
       [list-item "Add patient" ::router/create-patient]
       [list-item "Search Patients" ::router/search-patients]]]))
 
 (defn root []
-  (let [current-role (user-role/get)]
-    (fn []
-      (case @current-role
-        "nurse" [nurse-fn-list]
-        [role-selector]))))
+  (let [current-role @(user-role/get)]
+    (case current-role
+      "nurse" [nurse-fn-list]
+      [role-selector])))

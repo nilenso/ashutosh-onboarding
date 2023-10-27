@@ -48,7 +48,7 @@
         loading? (rf/subscribe [::submit-form ::loading])
         error-code (rf/subscribe [::submit-form ::error-code])]
     (fn []
-      [:section {:class ["flex" "flex-col" "gap-12"]}
+      [:section {:class ["flex" "flex-col" "gap-12" "items-center"]}
        [components/heading-2 "Add a Patient"]
        [:form {:ref (partial reset! form-ref)
                :method "POST"

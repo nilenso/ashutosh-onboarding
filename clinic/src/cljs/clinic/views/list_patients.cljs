@@ -47,9 +47,9 @@
         loading? @(rf/subscribe [::patients ::loading])
         patients @(rf/subscribe [::patients ::data])
         error-code @(rf/subscribe [::patients ::error-code])]
-    [:section {:class ["flex" "flex-col" "gap-8"]}
+    [:section {:class ["flex" "flex-col" "gap-12" "items-center"]}
      [components/heading-2 "Search Patients"]
-     [:form {:class ["flex" "flex-row" "self-center" "items-center" "gap-6"]
+     [:form {:class ["flex" "flex-row" "items-center" "gap-6"]
              :on-submit #(do (.preventDefault %)
                              (let [phone (-> js/document
                                              (.getElementById "phone")
@@ -85,7 +85,7 @@
 
        patients
        [:<>
-        [:table {:class ["w-full" "table-auto" "self-center" "text-center"]}
+        [:table {:class ["w-full" "table-auto" "text-center"]}
          [:thead
           [:tr {:class ["border-b"]}
            [:th {:class ["px-6" "py-2"]} "#"]

@@ -54,13 +54,14 @@
   (let [loading? @(rf/subscribe [::patient ::loading])
         patient @(rf/subscribe [::patient ::data])
         error-code @(rf/subscribe [::patient ::error-code])]
-    [:section {:class ["flex" "flex-col"]}
+    [:section {:class ["flex" "flex-col" "gap-12" "items-center"]}
+     [components/heading-2 "Patient Info"]
      (cond
        loading? [components/spinner {:class ["block" "self-center" "w-8" "h-8" "m-16" "text-blue-600"]}]
        (= 404 error-code) [not-found/root {:title "Patient Not Found"
                                            :message "This patient doesn't exist in our records!"}]
        error-code [components/danger-alert "There was an error while fetching patient data. Please try again!"]
-       patient [:table {:class ["table-auto" "self-center"]}
+       patient [:table {:class ["table-auto"]}
                 [:tbody
                  [row
                   [cell {:class ["text-gray-500"]} "Name"]
